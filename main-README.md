@@ -16,13 +16,50 @@ def calculaLU(matriz):
     # Retorna la factorización LU a través de una lista con dos matrices L y U de NxN.
     # Completar! Have fun
 
-def calcula_matriz_C(A): 
+def calcula_matriz_K(A):
+    n = A.shape[0]
+    #Genero una matriz cuadrada K con las mismas dimensiones que A
+    K = np.zeros((n, n))
+    for i in range(n):
+        #Sumo las conexiones de cada fila de A
+        valor_fila = A[i].sum()
+        #Agrego en la posición correspondiente de la diagonal de K la suma de los valores
+        K[i, i] = valor_fila
+    return K
+
+def calcula_matriz_inversa(A):
+  #Primero veo si es invertible:
+  if np.linalg.det(A) == 0:
+    return ('Matriz no invertible')
+  else:
+    n = A.shape[0]
+    I = np.eye(n) #matriz identidad
+    AI = np.zeros((n, 2 * n)) #matriz ampliada
+    for i in range(n):
+        for j in range(n):
+            AI[i][j] = A[i][j]
+            AI[i][j + n] = I[i][j]
+    #Triangulación de Gauss
+    for i in range(n):
+          pivote = AI[i][i]
+          AI[i] = AI[i] / pivote  #Normalizamos la fila i
+
+          for j in range(n):
+              if j != i:
+                  AI[j] = AI[j] - AI[j][i] * AI[i]
+    A_inv = AI[:, n:]
+
+    return A_inv
+
+def calcula_matriz_C(A):
     # Función para calcular la matriz de trancisiones C
     # A: Matriz de adyacencia
+    K = calcula_matriz_K(A)
+    Kinv = calcula_matriz_inversa(K)
+    #Calculo A transpuesta
+    AT = A.T
+    C = AT @ Kinv
     # Retorna la matriz C
-    Kinv = ... # Calcula inversa de la matriz K, que tiene en su diagonal la suma por filas de A
-    
-    C = ... # Calcula C multiplicando Kinv y A
     return C
 def calcula_matriz_Kinv(matriz):
     #suma por fila de A
