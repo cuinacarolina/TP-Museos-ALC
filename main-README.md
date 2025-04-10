@@ -61,6 +61,7 @@ def calcula_matriz_C(A):
     C = AT @ Kinv
     # Retorna la matriz C
     return C
+    
 def calcula_matriz_Kinv(matriz):
     #suma por fila de A
     A = 
@@ -91,12 +92,16 @@ def calcula_matriz_C_continua(D):
     return C
 
 def calcula_B(C,cantidad_de_visitas):
+    n = C.shape[0]
+    B = np.eye(n)
+    C_potencia = np.eye(n)  # C^0 = I
+    for _ in range(1, cantidad_de_visitas):  # desde k = 1 hasta r - 1
+        C_potencia = C_potencia @ C  # actualiza C^k
+        B += C_potencia
+    return B
     # Recibe la matriz T de transiciones, y calcula la matriz B que representa la relación entre el total de visitas y el número inicial de visitantes
     # suponiendo que cada visitante realizó cantidad_de_visitas pasos
     # C: Matirz de transiciones
     # cantidad_de_visitas: Cantidad de pasos en la red dado por los visitantes. Indicado como r en el enunciado
     # Retorna:Una matriz B que vincula la cantidad de visitas w con la cantidad de primeras visitas v
-    B = np.eye(C.shape[0])
-    for i in range(cantidad_de_visitas-1):
-        # Sumamos las matrices de transición para cada cantidad de pasos
-    return B
+   
