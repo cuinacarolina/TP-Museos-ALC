@@ -43,12 +43,10 @@ def calcula_matriz_inversa(A):
     for i in range(n):
           pivote = AI[i][i]
           AI[i] = AI[i] / pivote  #Normalizamos la fila i
-
           for j in range(n):
               if j != i:
                   AI[j] = AI[j] - AI[j][i] * AI[i]
     A_inv = AI[:, n:]
-
     return A_inv
 
 def calcula_matriz_C(A):
@@ -61,10 +59,6 @@ def calcula_matriz_C(A):
     C = AT @ Kinv
     # Retorna la matriz C
     return C
-    
-def calcula_matriz_Kinv(matriz):
-    #suma por fila de A
-    A = 
     
 def calcula_pagerank(A,alfa):
     # Función para calcular PageRank usando LU
@@ -81,27 +75,30 @@ def calcula_pagerank(A,alfa):
     return p
 
 def calcula_matriz_C_continua(D): 
-    # Función para calcular la matriz de trancisiones C
-    # A: Matriz de adyacencia
+    # Función para calcular la matriz de transiciones C
     # Retorna la matriz C en versión continua
     D = D.copy()
-    F = 1/D
-    np.fill_diagonal(F,0)
-    Kinv = ... # Calcula inversa de la matriz K, que tiene en su diagonal la suma por filas de F 
-    C = ... # Calcula C multiplicando Kinv y F
+    #Aplica la función F: f(dji​)=dji​**-1​
+    F = 1 / D
+    #Asegura que la diagonal sea 0
+    np.fill_diagonal(F, 0)
+    # Calcula la matriz K, que tiene en su diagonal la suma por filas de F 
+    K = calcula_matriz_K(F)
+    #Calcula la inversa de K
+    Kinv = calcula_matriz_inversa(K)    
+    C = Kinv @ F                        # Multiplicación de matrices
     return C
 
 def calcula_B(C,cantidad_de_visitas):
+    # Recibe la matriz C de transiciones, y calcula la matriz B que representa la relación entre el total de visitas y el número inicial de visitantes
+    # suponiendo que cada visitante realizó cantidad_de_visitas pasos
+    # cantidad_de_visitas: Cantidad de pasos en la red dado por los visitantes. Indicado como r en el enunciado
     n = C.shape[0]
     B = np.eye(n)
     C_potencia = np.eye(n)  # C^0 = I
     for _ in range(1, cantidad_de_visitas):  # desde k = 1 hasta r - 1
         C_potencia = C_potencia @ C  # actualiza C^k
         B += C_potencia
-    return B
-    # Recibe la matriz T de transiciones, y calcula la matriz B que representa la relación entre el total de visitas y el número inicial de visitantes
-    # suponiendo que cada visitante realizó cantidad_de_visitas pasos
-    # C: Matirz de transiciones
-    # cantidad_de_visitas: Cantidad de pasos en la red dado por los visitantes. Indicado como r en el enunciado
     # Retorna:Una matriz B que vincula la cantidad de visitas w con la cantidad de primeras visitas v
+    return B
    
