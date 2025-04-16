@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd # Para leer archivos
 import geopandas as gpd # Para hacer cosas geográficas
-import seaborn as sns # Para hacer plots lindos
+#import seaborn as sns # Para hacer plots lindos
 import networkx as nx # Construcción de la red en NetworkX
 import scipy
 #%%
@@ -44,29 +44,6 @@ def calcula_matriz_K(A):
     return K
 
 #%%
-def calcula_matriz_inversa_1(A):
-  #Primero veo si es invertible:
-  if np.linalg.det(A) == 0:
-    return ('Matriz no invertible')
-  else:
-    n = A.shape[0]
-    I = np.eye(n) #matriz identidad
-    AI = np.zeros((n, 2 * n)) #matriz ampliada
-    for i in range(n):
-        for j in range(n):
-            AI[i][j] = A[i][j]
-            AI[i][j + n] = I[i][j]
-    #Triangulación de Gauss
-    for i in range(n):
-          pivote = AI[i][i]
-          AI[i] = AI[i] / pivote  #Normalizamos la fila i
-
-          for j in range(n):
-              if j != i:
-                  AI[j] = AI[j] - AI[j][i] * AI[i]
-    A_inv = AI[:, n:]
-
-    return A_inv
 
 def calcula_matriz_inversa(A):
     # vemos si es invertible
@@ -178,12 +155,43 @@ K = calcula_matriz_K(A)
 Kinv = calcula_matriz_inversa(K)
 Kinv = calcula_matriz_inversa(K)
 C = calcula_matriz_C(A)
+p = calcula_pagerank(A, 1/5)
 
 #%%EJERCICIO 3
+def ejercicio_3_a():
+    m = 3
+    alfa = 1/5
+    A = construye_adyacencia(D, m)
+    p = calcula_pagerank(A, alfa)
+    
+    # Crear el grafo
+    G = nx.from_numpy_array(A)
+    
+    # Crear el diccionario de posiciones
+    posic = {i: (geom.x, geom.y) for i, geom in enumerate(museos.geometry)}
+    
+    # Visualización
+    fig, ax = plt.subplots(figsize=(10, 10))
+    barrios.boundary.plot(color='gray', ax=ax)
+    
+    tam_nodos = 400 * p / max(p)
+    
+    nx.draw(
+        G, posic, ax=ax,
+        node_size=tam_nodos,
+        node_color=p,
+        cmap=plt.cm.viridis,
+        with_labels=False,
+        edge_color='gray',
+        alpha=0.8
+    )
+    
+    sm = plt.cm.ScalarMappable(cmap=plt.cm.viridis)
+    sm.set_array(p)
+    plt.colorbar(sm, ax=ax, label='PageRank')
+    
+    plt.title("Red de Museos con Tamaños según PageRank")
+    return plt.show()
 
-m = 3
-alfa = 1/5
-A = construye_adyacencia(D, m)
-p = calcula_pagerank(A, alfa)
 
 
