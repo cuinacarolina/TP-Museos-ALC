@@ -6,7 +6,8 @@ import pandas as pd # Para leer archivos
 import geopandas as gpd # Para hacer cosas geográficas
 #import seaborn as sns # Para hacer plots lindos
 import networkx as nx # Construcción de la red en NetworkX
-import scipy
+from scipy.linalg import solve_triangular
+from pathlib import Path
 #%%
 # Leemos el archivo, retenemos aquellos museos que están en CABA, y descartamos aquellos que no tienen latitud y longitud
 museos = gpd.read_file('https://raw.githubusercontent.com/MuseosAbiertos/Leaflet-museums-OpenStreetMap/refs/heads/principal/data/export.geojson')
