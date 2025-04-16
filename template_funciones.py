@@ -7,7 +7,7 @@ import geopandas as gpd # Para hacer cosas geográficas
 import seaborn as sns # Para hacer plots lindos
 import networkx as nx # Construcción de la red en NetworkX
 import scipy
-
+#%%
 # Leemos el archivo, retenemos aquellos museos que están en CABA, y descartamos aquellos que no tienen latitud y longitud
 museos = gpd.read_file('https://raw.githubusercontent.com/MuseosAbiertos/Leaflet-museums-OpenStreetMap/refs/heads/principal/data/export.geojson')
 barrios = gpd.read_file('https://cdn.buenosaires.gob.ar/datosabiertos/datasets/ministerio-de-educacion/barrios/barrios.geojson')
@@ -17,7 +17,7 @@ barrios = gpd.read_file('https://cdn.buenosaires.gob.ar/datosabiertos/datasets/m
 # calculamos sus distancias a los otros puntos de df, redondeamos (obteniendo distancia en metros), y lo convertimos a un array 2D de numpy
 D = museos.to_crs("EPSG:22184").geometry.apply(lambda g: museos.to_crs("EPSG:22184").distance(g)).round().to_numpy()
 
-
+#%%
 def construye_adyacencia(D,m): 
     # Función que construye la matriz de adyacencia del grafo de museos
     # D matriz de distancias, m cantidad de links por nodo
@@ -31,7 +31,7 @@ def construye_adyacencia(D,m):
     return(A)
 
 
-
+#%%
 def calcula_matriz_K(A):
     n = A.shape[0]
     #Genero una matriz cuadrada K con las mismas dimensiones que A
@@ -43,7 +43,7 @@ def calcula_matriz_K(A):
         K[i, i] = valor_fila
     return K
 
-
+#%%
 def calcula_matriz_inversa_1(A):
   #Primero veo si es invertible:
   if np.linalg.det(A) == 0:
@@ -100,7 +100,7 @@ def calcula_matriz_inversa(A):
 
     # La matriz inversa está ahora en la parte derecha de la matriz ampliada
     A_inv = AI[:, n:]
-
+#%%
 def calcula_matriz_C(A):
     # Función para calcular la matriz de trancisiones C
     # A: Matriz de adyacencia
@@ -111,7 +111,7 @@ def calcula_matriz_C(A):
     C = AT @ Kinv
     # Retorna la matriz C
     return C
-    
+ #%%   
 def calculaLU(A):
     m=A.shape[0]
     n=A.shape[1]
@@ -125,11 +125,11 @@ def calculaLU(A):
             Ac[i,j] = Ac[i,j] / Ac[j,j]
             for k in range(j + 1, n):
                 Ac[i, k] = Ac[i, k] - Ac[i, j] * Ac[j, k]
-                cant_op += 4
     L = np.tril(Ac,-1) + np.eye(m)
     U = np.triu(Ac)
 
     return L, U
+#%%
 def calcula_pagerank(A,alfa):
     # Función para calcular PageRank usando LU
     # A: Matriz de adyacencia
@@ -147,6 +147,7 @@ def calcula_pagerank(A,alfa):
     p = scipy.linalg.solve_triangular(U,Up) # Segunda inversión usando U
     return p
 
+#%%
 def calcula_matriz_C_continua(D): 
     # Función para calcular la matriz de transiciones C
     # Retorna la matriz C en versión continua
@@ -162,6 +163,7 @@ def calcula_matriz_C_continua(D):
     C = Kinv @ F                        # Multiplicación de matrices
     return C
 
+#%%
 def calcula_B(C,cantidad_de_visitas):
     # Recibe la matriz C de transiciones, y calcula la matriz B que representa la relación entre el total de visitas y el número inicial de visitantes
     # suponiendo que cada visitante realizó cantidad_de_visitas pasos
