@@ -192,6 +192,17 @@ def ejercicio_3_a():
     
     plt.title("Red de Museos con Tamaños según PageRank")
     return plt.show()
+    #%%
+#%% EJERCICIO P
+#para m = 5, considerando los valores de α = 6/7, 4/5, 2/3, 1/2, 1/3, 1/5, 1/7.
+m = 3
+rango_alpha = [6/7, 4/5, 2/3, 1/2, 1/3, 1/5, 1/7]
+def ejercicio_3c(m,rango_alpha):
+    A = construye_adyacencia(D, m)
+    for valor in rango_alpha:
+       p = calcula_pagerank(A, valor) 
+       print(f'PageRank para alpha = {valor}: {p}')
+ejercicio_3c(m, rango_alpha)
 
 
 
