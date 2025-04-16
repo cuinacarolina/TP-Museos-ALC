@@ -211,5 +211,26 @@ def ejercicio_3_b():
         A = construye_adyacencia(D, m)
         p = calcula_pagerank(A, 1/5)
         print(f"PageRank para m = {m}: {p}")   
-    
+
+#%%EJERCICIO 5
+carpeta = Path.cwd()
+# Revisión al leer el archivo
+w = pd.read_csv("visitas.txt", sep="\t", header=None).values.flatten()
+
+def ejercicio_5_a():
+    C = calcula_matriz_C_continua(D)
+    return C
+C = ejercicio_5_a()
+def ejercicio_5_b(C,r):
+    cantidad_de_visitas = r
+    B = calcula_B(C, cantidad_de_visitas)
+    return B
+B = ejercicio_5_b(C,3)
+def ejercicio_5_c(B,w):
+    L, U = calculaLU(B)
+    y = solve_triangular(L, w, lower=True)
+    v = solve_triangular(U, y, lower=False)
+    return v
+
+v = ejercicio_5_c(B, w)
 
