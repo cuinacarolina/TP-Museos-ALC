@@ -115,8 +115,8 @@ def calcula_pagerank(A,alfa):
     L, U = calculaLU(M) # Calculamos descomposición LU a partir de C y d
     # Vector de 1s, multiplicado por el coeficiente correspondiente usando alfa y N.
     b = np.ones(N)*(alfa /N)
-    Up = scipy.linalg.solve_triangular(L,b,lower=True) # Primera inversión usando L
-    p = scipy.linalg.solve_triangular(U,Up) # Segunda inversión usando U
+    Up = solve_triangular(L,b,lower=True) # Primera inversión usando L
+    p = solve_triangular(U,Up) # Segunda inversión usando U
     p_norm = p/sum(p)
     return p_norm
 
