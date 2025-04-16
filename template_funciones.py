@@ -204,5 +204,12 @@ def ejercicio_3c(m,rango_alpha):
        print(f'PageRank para alpha = {valor}: {p}')
 ejercicio_3c(m, rango_alpha)
 
+rango_m = [1,3,5,10]
 
+def ejercicio_3_b():                                                                                                                                                                                      
+    for m in rango_m:
+        A = construye_adyacencia(D, m)
+        p = calcula_pagerank(A, 1/5)
+        print(f"PageRank para m = {m}: {p}")   
+    
 
