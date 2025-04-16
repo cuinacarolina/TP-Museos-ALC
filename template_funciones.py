@@ -68,38 +68,32 @@ def calcula_matriz_inversa_1(A):
 
     return A_inv
 
-
 def calcula_matriz_inversa(A):
-    # Primero, veo si es invertible:
+    # vemos si es invertible
     if np.linalg.det(A) == 0:
         return ('Matriz no invertible')
 
     n = A.shape[0]
-    I = np.eye(n)  # Matriz identidad
-    AI = np.hstack((A, I))  # Matriz ampliada A|I
+    I = np.eye(n)  # matriz identidad
+    AI = np.hstack((A, I))  #matriz ampliada A|I
 
     for i in range(n):
-        #busco el valor máximo absoluto en la columna i en caso de tener que per
+        #busco el valor máximo absoluto en la columna i en caso de tener que permutar filas
         fila_max = np.argmax(np.abs(AI[i:n, i])) + i  # Encuentro la fila con el pivote máximo
         if fila_max != i:
             # Permutamos las filas i y fila_max en AI
             AI[[i, fila_max], :] = AI[[fila_max, i], :]
-
         pivote = AI[i, i]
 
-        if pivote == 0:
-            return ('Matriz no invertible')  # Si el pivote es cero, la matriz no es invertible
-
-        # Normalizamos la fila i (hacemos que el pivote sea 1)
-        AI[i] = AI[i] / pivote
-
-        # Eliminación hacia abajo y hacia arriba
+        AI[i] = AI[i] / pivote #hacemos que el pivote sea 1
+        # Eliminación
         for j in range(n):
             if j != i:
                 AI[j] = AI[j] - AI[j, i] * AI[i]
 
-    # La matriz inversa está ahora en la parte derecha de la matriz ampliada
-    A_inv = AI[:, n:]
+        A_inv = AI[:, n:] #nos quedamos con la parte derecha de la matriz A|I
+
+    return A_inv
 #%%
 def calcula_matriz_C(A):
     # Función para calcular la matriz de trancisiones C
@@ -176,3 +170,20 @@ def calcula_B(C,cantidad_de_visitas):
         B += C_potencia
     # Retorna:Una matriz B que vincula la cantidad de visitas w con la cantidad de primeras visitas v
     return B
+
+#%%
+m = 3
+A = construye_adyacencia(D, m)
+K = calcula_matriz_K(A)
+Kinv = calcula_matriz_inversa(K)
+Kinv = calcula_matriz_inversa(K)
+C = calcula_matriz_C(A)
+
+#%%EJERCICIO 3
+
+m = 3
+alfa = 1/5
+A = construye_adyacencia(D, m)
+p = calcula_pagerank(A, alfa)
+
+
