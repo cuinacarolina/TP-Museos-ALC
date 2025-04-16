@@ -47,31 +47,19 @@ def calcula_matriz_K(A):
 #%%
 
 def calcula_matriz_inversa(A):
-    # vemos si es invertible
-    if np.linalg.det(A) == 0:
-        return ('Matriz no invertible')
-
     n = A.shape[0]
-    I = np.eye(n)  # matriz identidad
-    AI = np.hstack((A, I))  #matriz ampliada A|I
+    L, U = calculaLU(A)
+    I = np.eye(n)
+    A_inv = np.zeros_like(A)
 
     for i in range(n):
-        #busco el valor máximo absoluto en la columna i en caso de tener que permutar filas
-        fila_max = np.argmax(np.abs(AI[i:n, i])) + i  # Encuentro la fila con el pivote máximo
-        if fila_max != i:
-            # Permutamos las filas i y fila_max en AI
-            AI[[i, fila_max], :] = AI[[fila_max, i], :]
-        pivote = AI[i, i]
-
-        AI[i] = AI[i] / pivote #hacemos que el pivote sea 1
-        # Eliminación
-        for j in range(n):
-            if j != i:
-                AI[j] = AI[j] - AI[j, i] * AI[i]
-
-        A_inv = AI[:, n:] #nos quedamos con la parte derecha de la matriz A|I
+        e_i = I[:, i]
+        y = solve_triangular(L, e_i, lower=True)    # Ly = e_i
+        x_i = solve_triangular(U, y, lower=False)   # Ux = y
+        A_inv[:, i] = x_i
 
     return A_inv
+
 #%%
 def calcula_matriz_C(A):
     # Función para calcular la matriz de trancisiones C
@@ -277,3 +265,9 @@ def ejercicio_5_c(B,w):
 
 v = ejercicio_5_c(B, w)
 
+
+#%%EJERCICIO 6
+
+def condicion_1(B):
+    cond1 = np.linalg.cond(B,1)
+    return cond1
