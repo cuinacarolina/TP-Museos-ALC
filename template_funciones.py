@@ -116,7 +116,8 @@ def calcula_pagerank(A,alfa):
     b = np.ones(N)*(alfa /N)
     Up = scipy.linalg.solve_triangular(L,b,lower=True) # Primera inversión usando L
     p = scipy.linalg.solve_triangular(U,Up) # Segunda inversión usando U
-    return p
+    p_norm = p/sum(p)
+    return p_norm
 
 #%%
 def calcula_matriz_C_continua(D): 
@@ -205,12 +206,53 @@ def ejercicio_3c(m,rango_alpha):
 ejercicio_3c(m, rango_alpha)
 
 rango_m = [1,3,5,10]
+maximos_pg = []
 
 def ejercicio_3_b():                                                                                                                                                                                      
     for m in rango_m:
         A = construye_adyacencia(D, m)
         p = calcula_pagerank(A, 1/5)
-        print(f"PageRank para m = {m}: {p}")   
+        maximos_pg.append(np.argsort(p)[-3:][::-1])
+        
+        print(f"PageRank para m = {m}: {p}")  
+#%% Museos con mayor pagerank variando el m 
+maximos_indices = set()
+resultados = {}
+
+def grafico_mayores_pg_variando_m():    
+    for m in rango_m:
+        A = construye_adyacencia(D, m)
+        p = calcula_pagerank(A, 1/5)
+        top3 = np.argsort(p)[-3:][::-1]  #índices de los 3 mayores
+        maximos_indices.update(top3)    
+        
+    for idx in maximos_indices:
+        resultados[idx] = []
+    
+    #volvemos a recorrer rango_m y guardar los pageranks de esos museos
+    for m in rango_m:
+        A = construye_adyacencia(D, m)
+        p = calcula_pagerank(A, 1/5)
+        
+        for idx in maximos_indices:
+            resultados[idx].append(p[idx])
+    
+    #Graficamos
+    plt.figure(figsize=(12, 8))
+    
+    for idx, valores in resultados.items():
+        nombre = museos.loc[idx, "name"]
+        plt.plot(rango_m, valores, label=nombre)
+    
+    plt.xlabel("m [cantidad de vecinos]")
+    plt.ylabel("PageRank")
+    plt.title("Top museos por PageRank según m")
+    plt.legend(fontsize="small", bbox_to_anchor=(1, 0.5))
+    plt.tight_layout()
+    plt.show()
+    return
+
+grafico_mayores_pg_variando_m()  
 
 #%%EJERCICIO 5
 carpeta = Path.cwd()
