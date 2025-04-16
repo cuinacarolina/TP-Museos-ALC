@@ -228,3 +228,43 @@ def resolucion_eq_5(B,w):
 def condicion_1(B):
     cond1 = np.linalg.cond(B,1)
     return cond1
+
+
+from collections import defaultdict
+
+def mayores_pg_variando_alpha(m, rango_alpha):
+    A = construye_adyacencia(D, m)
+
+    # Guardamos todos los vectores PageRank
+    pageranks = []
+    museos_centrales = set()
+
+    for alpha in rango_alpha:
+        p = calcula_pagerank(A, alpha)
+        pageranks.append(p)
+
+        # Detectar top 3
+        top_3 = sorted(range(len(p)), key=lambda i: p[i], reverse=True)[:3]
+        museos_centrales.update(top_3)
+
+    # Ahora armamos la trayectoria completa de cada museo central
+    trayectoria = {idx: [] for idx in museos_centrales}
+    for p in pageranks:
+        for idx in museos_centrales:
+            trayectoria[idx].append(p[idx])
+
+    # Graficar
+    plt.figure(figsize=(10, 6))
+    for idx, valores in trayectoria.items():
+        nombre = museos.loc[idx, "name"]
+        plt.plot(rango_alpha, valores, marker = 'o', label = nombre)
+    
+
+    plt.xlabel('Alpha')
+    plt.ylabel('Valor de PageRank')
+    plt.title('Trayectoria de museos centrales según alpha')
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+mayores_pg_variando_alpha(m,rango_alpha)
