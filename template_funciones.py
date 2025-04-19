@@ -116,9 +116,11 @@ def calcula_matriz_C_continua(D):
     # Función para calcular la matriz de transiciones C
     # Retorna la matriz C en versión continua
     D = D.copy()
+    #evita la división por cero en la diagonal
+    np.fill_diagonal(D, np.nan) 
     #Aplica la función F: f(dji​)=dji​**-1​
     F = 1 / D
-    #Asegura que la diagonal sea 0
+    #volve a "colocar" los 0 en la diagonal 
     np.fill_diagonal(F, 0)
     # Calcula la matriz K, que tiene en su diagonal la suma por filas de F 
     K = calcula_matriz_K(F)
@@ -267,4 +269,3 @@ def mayores_pg_variando_alpha(m, rango_alpha):
     plt.legend()
     plt.tight_layout()
     plt.show()
-
