@@ -164,7 +164,7 @@ def ejercicio_3_a():
     plt.colorbar(escala, ax=ax, label='PageRank')
     plt.title("Red de Museos con Tamaños según PageRank")
     plt.show()
-    return 
+    return p
 
 def ejercicio_3_c(m,rango_alpha):
     A = construye_adyacencia(D, m)
@@ -217,7 +217,8 @@ def grafico_mayores_pg_variando_m(alpha, rango_m):
     return
 
 #%%EJERCICIO 5
-def resolucion_eq_5(B,w):
+def resolucion_eq_5(B):
+    w = pd.read_csv("visitas.txt", sep="\t", header=None).values.flatten()
     L, U = calculaLU(B)
     y = solve_triangular(L, w, lower=True)
     v = solve_triangular(U, y, lower=False)
