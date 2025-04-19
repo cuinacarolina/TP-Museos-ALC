@@ -70,7 +70,7 @@ def calcula_matriz_C(A):
     K = calcula_matriz_K(A)
     Kinv = calcula_matriz_inversa(K)
     #Calculo A transpuesta
-    AT = A.T
+    AT = np.transpose(A)
     C = AT @ Kinv
     # Retorna la matriz C
     return C
@@ -150,17 +150,14 @@ def ejercicio_3_a():
     A = construye_adyacencia(D, m)
     p = calcula_pagerank(A, alfa)
     # Creamos el grafo
-    G = nx.from_numpy_array(A)
-    # Creamos diccionario de posiciones
-    posic = {i: (geom.x, geom.y) for i, geom in enumerate(museos.geometry)}
+    G = nx.from_numpy_array(A) # Construimos la red a partir de la matriz de adyacencia
+    # Construimos un layout a partir de las coordenadas geográficas
+    G_layout = {i:v for i,v in enumerate(zip(museos.to_crs("EPSG:22184").get_coordinates()['x'],museos.to_crs("EPSG:22184").get_coordinates()['y']))}
+    factor_escala = 1e4
     fig, ax = plt.subplots(figsize=(10, 10))
-    barrios.boundary.plot(color='gray', ax=ax)
-    tam_nodos = 400 * p / max(p)
-    nx.draw( G, posic, ax=ax, node_size=tam_nodos,node_color=p,
-            cmap=plt.cm.viridis,
-            with_labels=False,
-            edge_color='gray',
-            alpha=0.8)
+    barrios.to_crs("EPSG:22184").boundary.plot(color='gray', ax=ax)
+    nx.draw_networkx(G, G_layout, node_size=p*factor_escala, node_color=p, cmap=plt.cm.viridis,
+                 ax=ax, with_labels=False, edge_color='gray', alpha=0.8)
     escala = plt.cm.ScalarMappable(cmap=plt.cm.viridis)
     escala.set_array(p)
     plt.colorbar(escala, ax=ax, label='PageRank')
@@ -181,7 +178,7 @@ def ejercicio_3_b(rango_m):
         p = calcula_pagerank(A, 1/5)
         print(f"PageRank para m = {m}: {p}")  
         return
-    
+ejercicio_3_a() 
 #%% Museos con mayor pagerank variando el m 
 def grafico_mayores_pg_variando_m(alpha, rango_m):    
     maximos_indices = set()
