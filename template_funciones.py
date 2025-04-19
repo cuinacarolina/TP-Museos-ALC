@@ -181,7 +181,7 @@ def ejercicio_3_b(rango_m):
         return
     
 #%% Museos con mayor pagerank variando el m 
-def grafico_mayores_pg_variando_m(rango_m):    
+def grafico_mayores_pg_variando_m(alpha, rango_m):    
     maximos_indices = set()
     resultados = {}
     for m in rango_m:
