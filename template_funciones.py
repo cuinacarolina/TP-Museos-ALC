@@ -267,4 +267,3 @@ def mayores_pg_variando_alpha(m, rango_alpha):
     plt.tight_layout()
     plt.show()
 
-mayores_pg_variando_alpha(m,rango_alpha)
