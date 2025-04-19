@@ -173,7 +173,7 @@ def ejercicio_3_c(m,rango_alpha):
        print(f'PageRank para alpha = {valor}: {p}')
        return
 
-def ejercicio_3_b(m, rango_m):                                                                                                                                                                                      
+def ejercicio_3_b(rango_m):                                                                                                                                                                                      
     for m in rango_m:
         A = construye_adyacencia(D, m)
         p = calcula_pagerank(A, 1/5)
@@ -181,7 +181,7 @@ def ejercicio_3_b(m, rango_m):
         return
     
 #%% Museos con mayor pagerank variando el m 
-def grafico_mayores_pg_variando_m(m, rango_m):    
+def grafico_mayores_pg_variando_m(rango_m):    
     maximos_indices = set()
     resultados = {}
     for m in rango_m:
