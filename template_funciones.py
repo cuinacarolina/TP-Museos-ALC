@@ -266,3 +266,5 @@ def mayores_pg_variando_alpha(m, rango_alpha):
     plt.legend()
     plt.tight_layout()
     plt.show()
+rango_alpha = [6/7, 4/5, 2/3, 1/2, 1/3, 1/5, 1/7]
+mayores_pg_variando_alpha(3, rango_alpha)
