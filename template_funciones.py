@@ -178,7 +178,6 @@ def ejercicio_3_b(rango_m):
         p = calcula_pagerank(A, 1/5)
         print(f"PageRank para m = {m}: {p}")  
         return
-ejercicio_3_a() 
 #%% Museos con mayor pagerank variando el m 
 def grafico_mayores_pg_variando_m(alpha, rango_m):    
     maximos_indices = set()
@@ -215,21 +214,7 @@ def grafico_mayores_pg_variando_m(alpha, rango_m):
     plt.show()
     return
 
-#%%EJERCICIO 5
-def resolucion_eq_5(B):
-    w = pd.read_csv("visitas.txt", sep="\t", header=None).values.flatten()
-    L, U = calculaLU(B)
-    y = solve_triangular(L, w, lower=True)
-    v = solve_triangular(U, y, lower=False)
-    return v
-
-
-#%%EJERCICIO 6
-def condicion_1(B):
-    cond1 = np.linalg.cond(B,1)
-    return cond1
-
-
+#%% Museos con mayor pagerank variando el alpha
 from collections import defaultdict
 
 def mayores_pg_variando_alpha(m, rango_alpha):
@@ -266,5 +251,21 @@ def mayores_pg_variando_alpha(m, rango_alpha):
     plt.legend()
     plt.tight_layout()
     plt.show()
-rango_alpha = [6/7, 4/5, 2/3, 1/2, 1/3, 1/5, 1/7]
-mayores_pg_variando_alpha(3, rango_alpha)
+    return
+#%%EJERCICIO 5
+def resolucion_eq_5(B):
+    w = pd.read_csv("visitas.txt", sep="\t", header=None).values.flatten()
+    L, U = calculaLU(B)
+    y = solve_triangular(L, w, lower=True)
+    v = solve_triangular(U, y, lower=False)
+    return v
+
+
+#%%EJERCICIO 6
+def condicion_1(B):
+    cond1 = np.linalg.cond(B,1)
+    return cond1
+
+
+
+
