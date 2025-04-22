@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd # Para leer archivos
 import geopandas as gpd # Para hacer cosas geográficas
-import seaborn as sns # Para hacer plots lindos
+#import seaborn as sns # Para hacer plots lindos
 import networkx as nx # Construcción de la red en NetworkX
 from scipy.linalg import solve_triangular
 from pathlib import Path
@@ -142,6 +142,13 @@ def calcula_B(C,cantidad_de_visitas):
         B += C_potencia
     # Retorna:Una matriz B que vincula la cantidad de visitas w con la cantidad de primeras visitas v
     return B
+
+cant_pasos = 3
+C = calcula_matriz_C_continua(D)
+print(f'Matriz C = {C}')
+B = calcula_B(C, cant_pasos)
+print(f'Matriz B = {B}')
+
 
 #%%EJERCICIO 3
 def ejercicio_3_a():
