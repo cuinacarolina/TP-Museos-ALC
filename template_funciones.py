@@ -333,7 +333,7 @@ def condicion_1(B):
     norma_B = norma1_matriz(B) 
     Binv = calcula_matriz_inversa(B)
     inv_norma = norma1_matriz(Binv)
-    cond = norma * inv_norma
+    cond = norma_B * inv_norma
     return cond
 
 
