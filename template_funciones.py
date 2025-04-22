@@ -314,6 +314,7 @@ def norma1_vector(vector):
     
 def resolucion_eq_5(B):
     L, U = calculaLU(B)
+    w = pd.read_csv("visitas.txt", sep="\t", header=None).values.flatten()
     y = solve_triangular(L, w, lower=True)
     v = norma1_vector(solve_triangular(U, y, lower=False))
     return v
