@@ -108,6 +108,7 @@ def calcula_pagerank(A,alfa):
     b = np.ones(N)*(alfa /N)
     Up = solve_triangular(L,b,lower=True) # Primera inversión usando L
     p = solve_triangular(U,Up) # Segunda inversión usando U
+    #Normalizamos los valores de pagerank
     p_norm = p/sum(p)
     return p_norm
 
@@ -254,7 +255,6 @@ def mayores_pg_variando_alpha(m, rango_alpha):
     return
 #%%EJERCICIO 5
 def resolucion_eq_5(B):
-    w = pd.read_csv("visitas.txt", sep="\t", header=None).values.flatten()
     L, U = calculaLU(B)
     y = solve_triangular(L, w, lower=True)
     v = solve_triangular(U, y, lower=False)
