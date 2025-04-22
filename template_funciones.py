@@ -143,13 +143,6 @@ def calcula_B(C,cantidad_de_visitas):
     # Retorna:Una matriz B que vincula la cantidad de visitas w con la cantidad de primeras visitas v
     return B
 
-cant_pasos = 3
-C = calcula_matriz_C_continua(D)
-print(f'Matriz C = {C}')
-B = calcula_B(C, cant_pasos)
-print(f'Matriz B = {B}')
-
-
 #%%EJERCICIO 3
 def ejercicio_3_a():
     m = 3
