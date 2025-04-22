@@ -163,23 +163,73 @@ def ejercicio_3_a():
     plt.colorbar(escala, ax=ax, label='PageRank')
     plt.title("Red de Museos con Tamaños según PageRank")
     plt.show()
-    return p
+    return 
 
-def ejercicio_3_c(m,rango_alpha):
+def ejercicio_3_c(m, rango_alpha):
     A = construye_adyacencia(D, m)
-    for valor in rango_alpha:
-       p = calcula_pagerank(A, valor) 
-       print(f'PageRank para alpha = {valor}: {p}')
+    G = nx.from_numpy_array(A)
+    G_layout = {
+        i: v for i, v in enumerate(zip(
+            museos.to_crs("EPSG:22184").get_coordinates()['x'],
+            museos.to_crs("EPSG:22184").get_coordinates()['y']
+        ))
+    }
+    factor_escala = 1e4
+    fig, axes = plt.subplots(2, 4, figsize=(20, 12))  # 2 filas, 4 columnas
+
+    for i in range(8):  # siempre 8 subplots
+        fila, col = divmod(i, 4)
+        ax = axes[fila][col]
+        if i < len(rango_alpha):
+            valor = rango_alpha[i]
+            p = calcula_pagerank(A, valor)
+            barrios.to_crs("EPSG:22184").boundary.plot(color='gray', ax=ax)
+            nx.draw_networkx(
+                G, G_layout, node_size=p * factor_escala, node_color=p,
+                cmap=plt.cm.viridis, ax=ax, with_labels=False,
+                edge_color='gray', alpha=0.8
+            )
+            
+            ax.set_title(f'α = {valor:.2f}')
+
+        else:
+            ax.axis('off')  # espacio vacío
+        ax.axis('off')
+
+    plt.suptitle("Red de Museos con Tamaños según PageRank y distintos α", fontsize=18, y=1.02)
+    plt.tight_layout()
+    plt.show()
+
     return
 
-def ejercicio_3_b(rango_m):                                                                                                                                                                                      
-    for m in rango_m:
+def ejercicio_3_b(rango_m):     
+    fig, axes = plt.subplots(1, 4, figsize=(20, 7))  #1 fila, 4 columnas
+    
+    for i, m in enumerate(rango_m):
+        ax = axes[i]    
         A = construye_adyacencia(D, m)
+        G = nx.from_numpy_array(A)
+        G_layout = {
+            i: v for i, v in enumerate(zip(
+                museos.to_crs("EPSG:22184").get_coordinates()['x'],
+                museos.to_crs("EPSG:22184").get_coordinates()['y']
+            ))
+        }
+        factor_escala = 1e4
         p = calcula_pagerank(A, 1/5)
-        print(f"PageRank para m = {m}: {p}")  
+        barrios.to_crs("EPSG:22184").boundary.plot(color='gray', ax=ax)
+        nx.draw_networkx(
+            G, G_layout, node_size=p * factor_escala, node_color=p,
+            cmap=plt.cm.viridis, ax=ax, with_labels=False,
+            edge_color='gray', alpha=0.8
+            )
+        ax.set_title(f'm = {m}')
+        plt.suptitle("Red de Museos con Tamaños según PageRank y distintos m", fontsize=18, y=1.02)
+        plt.tight_layout()
+    plt.show()                                                                                                                                                                                 
        
     return
- 
+
 #%% Museos con mayor pagerank variando el m 
 def grafico_mayores_pg_variando_m(alpha, rango_m):    
     maximos_indices = set()
@@ -240,10 +290,10 @@ def grafico_mayores_pg_variando_alpha(m, rango_alpha):
             trayectoria[idx].append(p[idx])
 
     # Graficar
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(12, 12))
     for idx, valores in trayectoria.items():
         nombre = museos.loc[idx, "name"]
-        plt.plot(rango_alpha, valores, label = nombre)
+        plt.plot(rango_alpha, valores, marker ='o', label = nombre)
     
 
     plt.xlabel('Alpha [factor de amortiguamiento]')
@@ -253,6 +303,7 @@ def grafico_mayores_pg_variando_alpha(m, rango_alpha):
     plt.tight_layout()
     plt.show()
     return
+
 #%%EJERCICIO 5
 def resolucion_eq_5(B):
     L, U = calculaLU(B)
