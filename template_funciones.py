@@ -305,18 +305,34 @@ def grafico_mayores_pg_variando_alpha(m, rango_alpha):
     return
 
 #%%EJERCICIO 5
+
+def norma1_vector(vector):
+    res = 0
+    for elemento in vector:
+        res += abs(elemento)
+    return res
+    
 def resolucion_eq_5(B):
     L, U = calculaLU(B)
     y = solve_triangular(L, w, lower=True)
-    v = solve_triangular(U, y, lower=False)
+    v = norma1_vector(solve_triangular(U, y, lower=False))
     return v
 
 
 #%%EJERCICIO 6
+def norma1_matriz(A):
+    res = []
+    for i in range (0,len(A),1):
+        suma = 0
+        for fila in A:
+            suma += abs(fila[i])
+        res.append(suma)
+    return max(res)
+
 def condicion_1(B):
-    norma = np.linalg.norm(B,1)
+    norma_B = norma1_matriz(B) 
     Binv = calcula_matriz_inversa(B)
-    inv_norma = np.linalg.norm(Binv,1)
+    inv_norma = norma1_matriz(Binv)
     cond = norma * inv_norma
     return cond
 
