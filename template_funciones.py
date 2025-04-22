@@ -4,7 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd # Para leer archivos
 import geopandas as gpd # Para hacer cosas geográficas
-#import seaborn as sns # Para hacer plots lindos
 import networkx as nx # Construcción de la red en NetworkX
 from scipy.linalg import solve_triangular
 from pathlib import Path
@@ -171,14 +170,16 @@ def ejercicio_3_c(m,rango_alpha):
     for valor in rango_alpha:
        p = calcula_pagerank(A, valor) 
        print(f'PageRank para alpha = {valor}: {p}')
-       return
+    return
 
 def ejercicio_3_b(rango_m):                                                                                                                                                                                      
     for m in rango_m:
         A = construye_adyacencia(D, m)
         p = calcula_pagerank(A, 1/5)
         print(f"PageRank para m = {m}: {p}")  
-        return
+       
+    return
+ 
 #%% Museos con mayor pagerank variando el m 
 def grafico_mayores_pg_variando_m(alpha, rango_m):    
     maximos_indices = set()
@@ -208,17 +209,16 @@ def grafico_mayores_pg_variando_m(alpha, rango_m):
         plt.plot(rango_m, valores, label=nombre)
     
     plt.xlabel("m [cantidad de vecinos]")
-    plt.ylabel("PageRank")
-    plt.title("Top museos por PageRank según m")
+    plt.ylabel("Valor de PageRank")
+    plt.title("PageRank de museso más centrales según m")
     plt.legend(fontsize="small", bbox_to_anchor=(1, 0.5))
     plt.tight_layout()
     plt.show()
     return
 
 #%% Museos con mayor pagerank variando el alpha
-from collections import defaultdict
 
-def mayores_pg_variando_alpha(m, rango_alpha):
+def grafico_mayores_pg_variando_alpha(m, rango_alpha):
     A = construye_adyacencia(D, m)
 
     # Guardamos todos los vectores PageRank
@@ -243,13 +243,13 @@ def mayores_pg_variando_alpha(m, rango_alpha):
     plt.figure(figsize=(10, 6))
     for idx, valores in trayectoria.items():
         nombre = museos.loc[idx, "name"]
-        plt.plot(rango_alpha, valores, marker = 'o', label = nombre)
+        plt.plot(rango_alpha, valores, label = nombre)
     
 
-    plt.xlabel('Alpha')
+    plt.xlabel('Alpha [factor de amortiguamiento]')
     plt.ylabel('Valor de PageRank')
-    plt.title('Trayectoria de museos centrales según alpha')
-    plt.legend()
+    plt.title("PageRank de museso más centrales según m")
+    plt.legend(fontsize="small", bbox_to_anchor=(1, 0.5))
     plt.tight_layout()
     plt.show()
     return
