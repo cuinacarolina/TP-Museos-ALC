@@ -260,7 +260,7 @@ def grafico_mayores_pg_variando_m(alpha, rango_m):
     
     plt.xlabel("m [cantidad de vecinos]")
     plt.ylabel("Valor de PageRank")
-    plt.title("PageRank de museso más centrales según m")
+    plt.title("PageRank de museos más centrales según m")
     plt.legend(fontsize="small", bbox_to_anchor=(1, 0.5))
     plt.tight_layout()
     plt.show()
@@ -298,7 +298,7 @@ def grafico_mayores_pg_variando_alpha(m, rango_alpha):
 
     plt.xlabel('Alpha [factor de amortiguamiento]')
     plt.ylabel('Valor de PageRank')
-    plt.title("PageRank de museso más centrales según m")
+    plt.title("PageRank de museos más centrales según alpha")
     plt.legend(fontsize="small", bbox_to_anchor=(1, 0.5))
     plt.tight_layout()
     plt.show()
