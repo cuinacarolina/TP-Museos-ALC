@@ -314,8 +314,12 @@ def resolucion_eq_5(B):
 
 #%%EJERCICIO 6
 def condicion_1(B):
-    cond1 = np.linalg.cond(B,1)
-    return cond1
+    norma = np.linalg.norm(B,1)
+    Binv = calcula_matriz_inversa(B)
+    inv_norma = np.linalg.norm(Binv,1)
+    cond = norma * inv_norma
+    return cond
+
 
 
 
