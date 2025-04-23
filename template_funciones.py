@@ -143,7 +143,7 @@ def calcula_matriz_C_continua(D):
     Kinv = calcula_matriz_inversa(K)    
     #Calculo F transpuesta
     FT = np.transpose(F) 
-    C = FT @ Kinv #C producto de A transpuesta y la inversa de K
+    C = FT @ Kinv #C producto de F transpuesta y la inversa de K
     return C
 
 #%%
