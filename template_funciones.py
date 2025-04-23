@@ -6,18 +6,15 @@ import pandas as pd # Para leer archivos
 import geopandas as gpd # Para hacer cosas geográficas
 import networkx as nx # Construcción de la red en NetworkX
 from scipy.linalg import solve_triangular
-from pathlib import Path
 #%%
 # Leemos el archivo, retenemos aquellos museos que están en CABA, y descartamos aquellos que no tienen latitud y longitud
 museos = gpd.read_file('https://raw.githubusercontent.com/MuseosAbiertos/Leaflet-museums-OpenStreetMap/refs/heads/principal/data/export.geojson')
 barrios = gpd.read_file('https://cdn.buenosaires.gob.ar/datosabiertos/datasets/ministerio-de-educacion/barrios/barrios.geojson')
-carpeta = Path.cwd()
-
 # En esta línea:
 # Tomamos museos, lo convertimos al sistema de coordenadas de interés, extraemos su geometría (los puntos del mapa),
 # calculamos sus distancias a los otros puntos de df, redondeamos (obteniendo distancia en metros), y lo convertimos a un array 2D de numpy
 D = museos.to_crs("EPSG:22184").geometry.apply(lambda g: museos.to_crs("EPSG:22184").distance(g)).round().to_numpy()
-# Leer el archivo vector w
+# Leemos el archivo vector w
 w = pd.read_csv("visitas.txt", sep="\t", header=None).values.flatten()
 
 #%%
@@ -144,7 +141,7 @@ def calcula_B(C,cantidad_de_visitas):
     return B
 
 #%%EJERCICIO 3
-def ejercicio_3_a():
+def ejercicio_3_a(D):
     m = 3
     alfa = 1/5
     A = construye_adyacencia(D, m)
@@ -165,7 +162,35 @@ def ejercicio_3_a():
     plt.show()
     return 
 
-def ejercicio_3_c(m, rango_alpha):
+
+def ejercicio_3_b(D, alpha, rango_m):     
+    fig, axes = plt.subplots(1, 4, figsize=(20, 7))  #1 fila, 4 columnas
+    
+    for i, m in enumerate(rango_m):
+        ax = axes[i]    
+        A = construye_adyacencia(D, m)
+        G = nx.from_numpy_array(A)
+        G_layout = {
+            i: v for i, v in enumerate(zip(
+                museos.to_crs("EPSG:22184").get_coordinates()['x'],
+                museos.to_crs("EPSG:22184").get_coordinates()['y']
+            ))
+        }
+        factor_escala = 1e4
+        p = calcula_pagerank(A, alpha)
+        barrios.to_crs("EPSG:22184").boundary.plot(color='gray', ax=ax)
+        nx.draw_networkx(
+            G, G_layout, node_size=p * factor_escala, node_color=p,
+            cmap=plt.cm.viridis, ax=ax, with_labels=False,
+            edge_color='gray', alpha=0.8
+            )
+        ax.set_title(f'm = {m}')
+        plt.suptitle("Red de Museos con Tamaños según PageRank y distintos m", fontsize=18, y=1.02)
+        plt.tight_layout()
+    plt.show()
+    return                                                                                                                                                                                 
+       
+def ejercicio_3_c(D, m, rango_alpha):
     A = construye_adyacencia(D, m)
     G = nx.from_numpy_array(A)
     G_layout = {
@@ -201,37 +226,10 @@ def ejercicio_3_c(m, rango_alpha):
     plt.show()
 
     return
-
-def ejercicio_3_b(rango_m):     
-    fig, axes = plt.subplots(1, 4, figsize=(20, 7))  #1 fila, 4 columnas
     
-    for i, m in enumerate(rango_m):
-        ax = axes[i]    
-        A = construye_adyacencia(D, m)
-        G = nx.from_numpy_array(A)
-        G_layout = {
-            i: v for i, v in enumerate(zip(
-                museos.to_crs("EPSG:22184").get_coordinates()['x'],
-                museos.to_crs("EPSG:22184").get_coordinates()['y']
-            ))
-        }
-        factor_escala = 1e4
-        p = calcula_pagerank(A, 1/5)
-        barrios.to_crs("EPSG:22184").boundary.plot(color='gray', ax=ax)
-        nx.draw_networkx(
-            G, G_layout, node_size=p * factor_escala, node_color=p,
-            cmap=plt.cm.viridis, ax=ax, with_labels=False,
-            edge_color='gray', alpha=0.8
-            )
-        ax.set_title(f'm = {m}')
-        plt.suptitle("Red de Museos con Tamaños según PageRank y distintos m", fontsize=18, y=1.02)
-        plt.tight_layout()
-    plt.show()                                                                                                                                                                                 
-       
-    return
 
 #%% Museos con mayor pagerank variando el m 
-def grafico_mayores_pg_variando_m(alpha, rango_m):    
+def grafico_mayores_pg_variando_m(D, alpha, rango_m):    
     maximos_indices = set()
     resultados = {}
     for m in rango_m:
@@ -268,7 +266,7 @@ def grafico_mayores_pg_variando_m(alpha, rango_m):
 
 #%% Museos con mayor pagerank variando el alpha
 
-def grafico_mayores_pg_variando_alpha(m, rango_alpha):
+def grafico_mayores_pg_variando_alpha(D, m, rango_alpha):
     A = construye_adyacencia(D, m)
 
     # Guardamos todos los vectores PageRank
@@ -306,7 +304,7 @@ def grafico_mayores_pg_variando_alpha(m, rango_alpha):
 
 #%%EJERCICIO 5
 
-def norma1_vector(vector):
+def norma_1_vector(vector):
     res = 0
     for elemento in vector:
         res += abs(elemento)
@@ -314,14 +312,13 @@ def norma1_vector(vector):
     
 def resolucion_eq_5(B):
     L, U = calculaLU(B)
-    w = pd.read_csv("visitas.txt", sep="\t", header=None).values.flatten()
     y = solve_triangular(L, w, lower=True)
-    v = norma1_vector(solve_triangular(U, y, lower=False))
+    v = norma_1_vector(solve_triangular(U, y, lower=False))
     return v
 
 
 #%%EJERCICIO 6
-def norma1_matriz(A):
+def norma_1_matriz(A):
     res = []
     for i in range (0,len(A),1):
         suma = 0
@@ -331,9 +328,9 @@ def norma1_matriz(A):
     return max(res)
 
 def condicion_1(B):
-    norma_B = norma1_matriz(B) 
+    norma_B = norma_1_matriz(B) 
     Binv = calcula_matriz_inversa(B)
-    inv_norma = norma1_matriz(Binv)
+    inv_norma = norma_1_matriz(Binv)
     cond = norma_B * inv_norma
     return cond
 
