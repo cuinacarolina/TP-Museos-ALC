@@ -74,7 +74,7 @@ def calcula_matriz_C(A):
     Kinv = calcula_matriz_inversa(K) #calcula la inversa de K llamando a la función calcula_matriz_inversa
     #Calculo A transpuesta
     AT = np.transpose(A) 
-    C = AT @ Kinv #C producto de A trnaspuesta y la inversa de K
+    C = AT @ Kinv #C producto de A transpuesta y la inversa de K
     # Retorna la matriz C
     return C
  #%%   
@@ -141,7 +141,9 @@ def calcula_matriz_C_continua(D):
     K = calcula_matriz_K(F)
     #Calcula la inversa de K
     Kinv = calcula_matriz_inversa(K)    
-    C = Kinv @ F # Multiplicación de matrices
+    #Calculo F transpuesta
+    FT = np.transpose(F) 
+    C = FT @ Kinv #C producto de A transpuesta y la inversa de K
     return C
 
 #%%
