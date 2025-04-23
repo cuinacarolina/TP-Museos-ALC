@@ -80,6 +80,7 @@ def calcula_matriz_C(A):
  #%%   
  #funcion que recibe una matriz A.
  #devuelve la matriz L (parte inferior / lower) y la matriz U (parte superior / upper)
+ #es decir la descomposición LU de A
 def calculaLU(A):
     m=A.shape[0] # cantidad de filas de A
     n=A.shape[1] # cantidad de columnas de A
