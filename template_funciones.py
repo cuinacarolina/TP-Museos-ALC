@@ -163,6 +163,9 @@ def calcula_B(C,cantidad_de_visitas):
     return B
 
 #%%EJERCICIO 3
+# Genera y visualiza una red de museos con tamaños de nodo según el algoritmo PageRank
+# Recibe D: DataFrame que representa las distancias entre museos, utilizado para construir la matriz de adyacencia.
+# Retorna: None. Genera un grafico.
 def ejercicio_3_a(D):
     m = 3
     alfa = 1/5
@@ -185,6 +188,11 @@ def ejercicio_3_a(D):
     return 
 
 
+#Visualiza múltiples redes de museos generadas con distintos valores de m, mostrando los tamaños de los nodos según los valores de PageRank.
+# Recibe: D (DataFrame): DataFrame con las distancias entre museos, usado para construir las matrices de adyacencia.
+#         alpha (float): Parámetro de amortiguación del algoritmo de PageRank.
+#         rango_m (array): Conjunto de valores de m para construir diferentes redes.
+# Retorna: none. Genera un grafico
 def ejercicio_3_b(D, alpha, rango_m):     
     fig, axes = plt.subplots(1, 4, figsize=(20, 7))  #1 fila, 4 columnas
     
@@ -211,7 +219,15 @@ def ejercicio_3_b(D, alpha, rango_m):
         plt.tight_layout()
     plt.show()
     return                                                                                                                                                                                 
-       
+
+
+# Visualiza múltiples redes de museos generadas con distintos valores de alpha (α),
+# mostrando los tamaños de los nodos según los valores de PageRank.
+# 
+# Recibe: D (DataFrame): DataFrame con las distancias entre museos, usado para construir la matriz de adyacencia.
+#         m (int): Cantidad de vecinos más cercanos con los que se conecta cada museo en la red.
+#         rango_alpha (array): Conjunto de valores de α (parámetro de amortiguación) para calcular PageRank.
+# Retorna: None. La función genera un gráfico comparativo.    
 def ejercicio_3_c(D, m, rango_alpha):
     A = construye_adyacencia(D, m)
     G = nx.from_numpy_array(A)
@@ -224,7 +240,7 @@ def ejercicio_3_c(D, m, rango_alpha):
     factor_escala = 1e4
     fig, axes = plt.subplots(2, 4, figsize=(20, 12))  # 2 filas, 4 columnas
 
-    for i in range(8):  # siempre 8 subplots
+    for i in range(8):  #siempre 8 subplots
         fila, col = divmod(i, 4)
         ax = axes[fila][col]
         if i < len(rango_alpha):
@@ -240,17 +256,21 @@ def ejercicio_3_c(D, m, rango_alpha):
             ax.set_title(f'α = {valor:.2f}')
 
         else:
-            ax.axis('off')  # espacio vacío
+            ax.axis('off')  #espacio vacío
         ax.axis('off')
 
     plt.suptitle("Red de Museos con Tamaños según PageRank y distintos α", fontsize=18, y=1.02)
     plt.tight_layout()
     plt.show()
-
     return
     
 
 #%% Museos con mayor pagerank variando el m 
+# Visualiza el PageRank de los museos mas centrales para algun m. 
+# Recibe: D (DataFrame): DataFrame con las distancias entre museos, usado para construir la matriz de adyacencia.
+#         alpha (int): parámetro de amortiguación.
+#         rango_m (array): Conjunto de valores de m (cantidad de vecinos)
+# Retorna: None. La función genera un gráfico de lineas. 
 def grafico_mayores_pg_variando_m(D, alpha, rango_m):    
     maximos_indices = set()
     resultados = {}
@@ -262,7 +282,6 @@ def grafico_mayores_pg_variando_m(D, alpha, rango_m):
         
     for idx in maximos_indices:
         resultados[idx] = []
-    
     #volvemos a recorrer rango_m y guardar los pageranks de esos museos
     for m in rango_m:
         A = construye_adyacencia(D, m)
@@ -270,7 +289,6 @@ def grafico_mayores_pg_variando_m(D, alpha, rango_m):
         
         for idx in maximos_indices:
             resultados[idx].append(p[idx])
-    
     #Graficamos
     plt.figure(figsize=(12, 8))
     
@@ -287,7 +305,11 @@ def grafico_mayores_pg_variando_m(D, alpha, rango_m):
     return
 
 #%% Museos con mayor pagerank variando el alpha
-
+# Visualiza el PageRank de los museos mas centrales para algun alpha. 
+# Recibe: D (DataFrame): DataFrame con las distancias entre museos, usado para construir la matriz de adyacencia.
+#         m (int): Cantidad de vecinos
+#         rango_alpha (array): Conjunto de valores de α (parámetro de amortiguación) para calcular PageRank.
+# Retorna: None. La función genera un gráfico de lineas. 
 def grafico_mayores_pg_variando_alpha(D, m, rango_alpha):
     A = construye_adyacencia(D, m)
 
@@ -309,7 +331,7 @@ def grafico_mayores_pg_variando_alpha(D, m, rango_alpha):
         for idx in museos_centrales:
             trayectoria[idx].append(p[idx])
 
-    # Graficar
+    #Graficar
     plt.figure(figsize=(12, 12))
     for idx, valores in trayectoria.items():
         nombre = museos.loc[idx, "name"]
