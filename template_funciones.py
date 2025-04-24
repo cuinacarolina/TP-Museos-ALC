@@ -87,7 +87,7 @@ def calcula_matriz_inversa(A):
 #%%
 # Calcula la matriz de transiciones C a partir de una matriz de adyacencia A.
 # Recibe: A (matriz): matriz de adyacencia 
-# Retorna: C (matriz): matriz de transiciones obtenida como el producto de A transpuesta por la inversa de K.
+# Retorna: C (matriz): matriz de transiciones C.
 
 def calcula_matriz_C(A):
     K = calcula_matriz_K(A) #calcula K de A llamando a la funcion calcula_matriz_k
@@ -99,7 +99,7 @@ def calcula_matriz_C(A):
 
 #%%   
 # Calcula la descomposición LU de una matriz cuadrada A,
-# retornando las matrices L (triangular inferior con unos en la diagonal) y U (triangular superior).
+# retornando las matrices L y U.
 # Recibe: A (matriz).
 # Retorna: L (matriz): matriz triangular inferior con 1s en la diagonal.
 #          U (matriz): matriz triangular superior.
@@ -151,7 +151,7 @@ def calcula_pagerank(A,alfa):
 #%%
 # Calcula la matriz de transiciones C continua a partir de una matriz de distancias D.
 # Recibe: D (matriz): matriz de distancia.
-# Retorna: C (matriz): matriz de transición continua,
+# Retorna: C (matriz): matriz de transición continua.
 def calcula_matriz_C_continua(D): 
     # Copia D para no modificar la original
     D = D.copy()
@@ -176,7 +176,7 @@ def calcula_matriz_C_continua(D):
 # Calcula la matriz B a partir de la matriz de transiciones C y una cantidad dada de visitas,
 # que relaciona el total de visitas y el número inicial de visitantes.
 # Recibe: C (matriz): matriz de transiciones de la red.
-#         cantidad_de_visitas (int): cantidad total de pasos o visitas realizadas (r en enunciado).
+#        cantidad_de_visitas (int): cantidad total de pasos o visitas realizadas (r en enunciado).
 # Retorna: B (matriz): matriz que vincula el total de visitas w con las primeras visitas v.
 
 def calcula_B(C,cantidad_de_visitas):
