@@ -199,19 +199,23 @@ def ejercicio_3_a(D):
     alfa = 1/5
     A = construye_adyacencia(D, m)
     p = calcula_pagerank(A, alfa)
-    # Creamos el grafo
-    G = nx.from_numpy_array(A) # Construimos la red a partir de la matriz de adyacencia
-    # Construimos un layout a partir de las coordenadas geográficas
+    # Crea el grafo
+    G = nx.from_numpy_array(A) # Construye la red a partir de la matriz de adyacencia
+    # Construye un layout a partir de las coordenadas geográficas
     G_layout = {i:v for i,v in enumerate(zip(museos.to_crs("EPSG:22184").get_coordinates()['x'],museos.to_crs("EPSG:22184").get_coordinates()['y']))}
+    # Establece el factor escala del gráfico
     factor_escala = 1e4
     fig, ax = plt.subplots(figsize=(10, 10))
     barrios.to_crs("EPSG:22184").boundary.plot(color='gray', ax=ax)
+    # Genera el gráfico
     nx.draw_networkx(G, G_layout, node_size=p*factor_escala, node_color=p, cmap=plt.cm.viridis,
                  ax=ax, with_labels=False, edge_color='gray', alpha=0.8)
     escala = plt.cm.ScalarMappable(cmap=plt.cm.viridis)
     escala.set_array(p)
     plt.colorbar(escala, ax=ax, label='PageRank')
+    # Título
     plt.title("Red de Museos con Tamaños según PageRank")
+    # Muestra el gráfico
     plt.show()
     return 
 
@@ -222,8 +226,9 @@ def ejercicio_3_a(D):
 #         rango_m (array): Conjunto de valores de m para construir diferentes redes.
 # Retorna: none. Genera un grafico
 def ejercicio_3_b(D, alpha, rango_m):     
+    # Genera la imagen del tamaño y división necesarios
     fig, axes = plt.subplots(1, 4, figsize=(20, 7))  #1 fila, 4 columnas
-    
+    # Genera el gráfico de conexiones para cada valor de m
     for i, m in enumerate(rango_m):
         ax = axes[i]    
         A = construye_adyacencia(D, m)
@@ -245,6 +250,7 @@ def ejercicio_3_b(D, alpha, rango_m):
         ax.set_title(f'm = {m}')
         plt.suptitle("Red de Museos con Tamaños según PageRank y distintos m", fontsize=18, y=1.02)
         plt.tight_layout()
+    # Muestra la imagen final
     plt.show()
     return                                                                                                                                                                                 
 
@@ -256,7 +262,9 @@ def ejercicio_3_b(D, alpha, rango_m):
 #         rango_alpha (array): Conjunto de valores de α (parámetro de amortiguación) para calcular PageRank.
 # Retorna: None. La función genera un gráfico comparativo.    
 def ejercicio_3_c(D, m, rango_alpha):
+    # Genera la imagen del tamaño y división necesarios
     A = construye_adyacencia(D, m)
+    # Crea el grafo a partir de A
     G = nx.from_numpy_array(A)
     G_layout = {
         i: v for i, v in enumerate(zip(
@@ -266,7 +274,8 @@ def ejercicio_3_c(D, m, rango_alpha):
     }
     factor_escala = 1e4
     fig, axes = plt.subplots(2, 4, figsize=(20, 12))  # 2 filas, 4 columnas
-
+    
+    # Genera el gráfico de conexiones para cada valor de m
     for i in range(8):  #siempre 8 subplots
         fila, col = divmod(i, 4)
         ax = axes[fila][col]
@@ -288,6 +297,7 @@ def ejercicio_3_c(D, m, rango_alpha):
 
     plt.suptitle("Red de Museos con Tamaños según PageRank y distintos α", fontsize=18, y=1.02)
     plt.tight_layout()
+    # Muestra la imagen final
     plt.show()
     return
     
@@ -301,6 +311,7 @@ def ejercicio_3_c(D, m, rango_alpha):
 def grafico_mayores_pg_variando_m(D, alpha, rango_m):    
     maximos_indices = set()
     resultados = {}
+    # Recorre los valores posibles de m, para cada uno calcula el pagerank y guarda el valor de los 3 mayores índices
     for m in rango_m:
         A = construye_adyacencia(D, m)
         p = calcula_pagerank(A, 1/5)
@@ -309,14 +320,14 @@ def grafico_mayores_pg_variando_m(D, alpha, rango_m):
         
     for idx in maximos_indices:
         resultados[idx] = []
-    #vuelve a recorrer rango_m y guardar los pageranks de esos museos
+    # Vuelve a recorrer rango_m y guardar los pageranks de esos museos
     for m in rango_m:
         A = construye_adyacencia(D, m)
         p = calcula_pagerank(A, 1/5)
         
         for idx in maximos_indices:
             resultados[idx].append(p[idx])
-    #Grafica
+    # Grafica
     plt.figure(figsize=(12, 8))
     
     for idx, valores in resultados.items():
@@ -358,7 +369,7 @@ def grafico_mayores_pg_variando_alpha(D, m, rango_alpha):
         for idx in museos_centrales:
             trayectoria[idx].append(p[idx])
 
-    #Grafica
+    # Grafica
     plt.figure(figsize=(12, 12))
     for idx, valores in trayectoria.items():
         nombre = museos.loc[idx, "name"]
