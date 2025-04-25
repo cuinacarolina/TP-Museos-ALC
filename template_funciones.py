@@ -390,10 +390,10 @@ def grafico_mayores_pg_variando_alpha(D, m, rango_alpha):
 # Retorna: res (float): norma 1 del vector.
 
 def norma_1_vector(vector):
-    #crea una varibale para que almacene la suma de los modulos de las coordenadas del vector
+    #crea una variable para que almacene la suma de los módulos de las coordenadas del vector
     res = 0
     for elemento in vector:
-        #suma los modulos de todas las coordenadas del vector
+        #suma los módulos de todas las coordenadas del vector
         res += abs(elemento)
     return res
 
@@ -428,7 +428,7 @@ def norma_1_matriz(A):
             suma += abs(fila[i])
         #cuando recorre todas las filas para una columna guardo la suma en res.
         res.append(suma)
-    #una vez que tiene las suma de todas las columnas de la matriz devuelve la maxima de ellas.
+    #una vez que tiene las suma de todas las columnas de la matriz devuelve la máxima de ellas.
     return max(res)
 
 # Calcula la condición de la matriz B utilizando la norma 1 y la norma 1 de su inversa.
@@ -436,13 +436,13 @@ def norma_1_matriz(A):
 # Retorna: cond (float): condición de la matriz B.
 
 def condicion_1(B):
-    #calcula la norma 1 de B llamando a la funcion norma_1_matriz.
+    #calcula la norma 1 de B llamando a la función norma_1_matriz.
     norma_B = norma_1_matriz(B) 
-    #calcula la inversa de B llamando a la funcion calcula_matriz_inversa(B).
+    #calcula la inversa de B llamando a la función calcula_matriz_inversa(B).
     Binv = calcula_matriz_inversa(B)
-    #calcula la norma 1 de la inversa de B llamando a la funcion norma_1_matriz.
+    #calcula la norma 1 de la inversa de B llamando a la función norma_1_matriz.
     inv_norma = norma_1_matriz(Binv)
-    #la variable condicion es la condicion de B es decir el producto entre la norma_B y la inv_norma
+    #la variable cond es la condición de B es decir el producto entre la norma_B y la inv_norma
     cond = norma_B * inv_norma
     #retorna cond
     return cond
