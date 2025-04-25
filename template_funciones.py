@@ -7,7 +7,7 @@
 Materia: Álgebra Lineal Computacional 
 Trabajo Practico 1
 Equipo: Brasil
-Autores: Carolina Cuina, Juana Gala Moran, María Juliana Salfity
+Autores: Carolina Julia Cuina, Juana Gala Moran, María Juliana Salfity
 """
 
 #%%
