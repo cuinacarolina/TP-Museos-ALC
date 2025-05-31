@@ -214,7 +214,7 @@ def ejercicio_3_a(D):
     escala.set_array(p)
     plt.colorbar(escala, ax=ax, label='PageRank')
     # Título
-    plt.title("Red de Museos con Tamaños según PageRank")
+    plt.title("Red de Museos con Tamaños según PageRank con m = 3 y alfa = 1/5")
     # Muestra el gráfico
     plt.show()
     return 
