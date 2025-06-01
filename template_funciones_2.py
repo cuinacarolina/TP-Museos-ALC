@@ -115,22 +115,29 @@ def metpot2(A,v1,l1,tol=1e-8,maxrep=np.inf):
    return metpot1(deflA,tol,maxrep)
 
 #%%
-def metpotI(A,mu,tol=1e-8,maxrep=np.Inf):
+def metpotI(A,mu,tol=1e-8,maxrep=np.inf):
     # Retorna el primer autovalor de la inversa de A + mu * I, junto a su autovector y si el método convergió.
-    return metpot1(...,tol=tol,maxrep=maxrep)
+    #calculo el autovalor la inversa de A + mu * I
+    _,l,_ = metpotI(A, mu,tol=1e-8,maxrep=np.inf)
+    l = 1/l + mu
+    # el autovector y si converge o no es el mismo que de A 
+    v1,_,converge = metpotI(A, mu,tol=1e-8,maxrep=np.inf)
+    return v1,l,converge
 
-def metpotI2(A,mu,tol=1e-8,maxrep=np.Inf):
+#%%
+def metpotI2(A,mu,tol=1e-8,maxrep=np.inf):
    # Recibe la matriz A, y un valor mu y retorna el segundo autovalor y autovector de la matriz A, 
    # suponiendo que sus autovalores son positivos excepto por el menor que es igual a 0
    # Retorna el segundo autovector, su autovalor, y si el metodo llegó a converger.
-   X = ... # Calculamos la matriz A shifteada en mu
-   iX = ... # La invertimos
-   defliX = ... # La deflacionamos
-   v,l,_ =  ... # Buscamos su segundo autovector
+   n,_ = A.shape #tomo la dimension de A
+   I = np.eye(n) #creo la matriz identidad de dimension n
+   X = A + mu* I # Calculamos la matriz A shifteada en mu (plantilla)
+   iX = np.linalg.inv(X) # La invertimos
+   defliX = deflaciona(iX,tol=1e-8,maxrep=np.inf) # La deflacionamos
+   v,l,_ = metpot1(defliX,tol,maxrep)  # Buscamos su segundo autovector
    l = 1/l # Reobtenemos el autovalor correcto
    l -= mu
    return v,l,_
-
 
 def laplaciano_iterativo(A,niveles,nombres_s=None):
     # Recibe una matriz A, una cantidad de niveles sobre los que hacer cortes, y los nombres de los nodos
