@@ -253,3 +253,20 @@ def modularidad_iterativo(A=None, R=None, nombres_s=None):
 #%% pruebaç
 #print(laplaciano_iterativo(A_ejemplo,2))
 print(modularidad_iterativo(A_ejemplo))
+
+#%%
+#%%
+lista_m = [3,5,10,50]
+cantidad_de_grupos = modularidad_iterativo(A_ejemplo)
+niveles = cantidad_de_grupos
+
+def comunidades(D,lista ,int):
+    for i in lista:
+        A = construye_adyacencia(D, i)
+       #A_prima = (1/2*(A + A.T)) innecesario porque A+A.T = 2A entonces 1/2*2A = A
+        if int == 0:
+           laplaciano_iterativo(A, niveles)
+        else:
+            modularidad_iterativo(A)
+        #HACER GRAFICOS
+    #return grafico
