@@ -162,7 +162,7 @@ def laplaciano_iterativo(A,niveles,nombres_s=None):
                 )        
 
 
-def modularidad_iterativo(A=None,R=None,nombres_s=None):
+def modularidad_iterativo(A=None, R=None, nombres_s=None):
     # Recibe una matriz A, una matriz R de modularidad, y los nombres de los nodos
     # Retorna una lista con conjuntos de nodos representando las comunidades.
 
@@ -175,28 +175,33 @@ def modularidad_iterativo(A=None,R=None,nombres_s=None):
         nombres_s = range(R.shape[0])
     # Acá empieza lo bueno
     if R.shape[0] == 1: # Si llegamos al último nivel
-        return(...)
+        return [nombres_s]
     else:
-        v,l,_ = ... # Primer autovector y autovalor de R
+        v, l, _ = metpot1(R)  # Primer autovector y autovalor de R
         # Modularidad Actual:
-        Q0 = np.sum(R[v>0,:][:,v>0]) + np.sum(R[v<0,:][:,v<0])
-        if Q0<=0 or all(v>0) or all(v<0): # Si la modularidad actual es menor a cero, o no se propone una partición, terminamos
-            return(...)
+        Q0 = np.sum(R[v > 0, :][:, v > 0]) + np.sum(R[v < 0, :][:, v < 0])
+        if Q0 <= 0 or all(v > 0) or all(v < 0):  # Si la modularidad actual es menor a cero, o no se propone una partición, terminamos
+            return [nombres_s]
         else:
             ## Hacemos como con L, pero usando directamente R para poder mantener siempre la misma matriz de modularidad
-            Rp = ... # Parte de R asociada a los valores positivos de v
-            Rm = ... # Parte asociada a los valores negativos de v
-            vp,lp,_ = ...  # autovector principal de Rp
-            vm,lm,_ = ... # autovector principal de Rm
-        
+            indices_pos = [i for i in range(len(v)) if v[i] > 0]
+            indices_neg = [i for i in range(len(v)) if v[i] < 0]
+            Rp = R[np.ix_(indices_pos, indices_pos)]  # Parte de R asociada a los valores positivos de v
+            Rm = R[np.ix_(indices_neg, indices_neg)]  # Parte asociada a los valores negativos de v
+            vp, lp, _ = metpot1(Rp)  # autovector principal de Rp
+            vm, lm, _ = metpot1(Rm)  # autovector principal de Rm
+
             # Calculamos el cambio en Q que se produciría al hacer esta partición
             Q1 = 0
-            if not all(vp>0) or all(vp<0):
-               Q1 = np.sum(Rp[vp>0,:][:,vp>0]) + np.sum(Rp[vp<0,:][:,vp<0])
-            if not all(vm>0) or all(vm<0):
-                Q1 += np.sum(Rm[vm>0,:][:,vm>0]) + np.sum(Rm[vm<0,:][:,vm<0])
-            if Q0 >= Q1: # Si al partir obtuvimos un Q menor, devolvemos la última partición que hicimos
-                return([[ni for ni,vi in zip(nombres_s,v) if vi>0],[ni for ni,vi in zip(nombres_s,v) if vi<0]])
+            if not all(vp > 0) or all(vp < 0):
+                Q1 = np.sum(Rp[vp > 0, :][:, vp > 0]) + np.sum(Rp[vp < 0, :][:, vp < 0])
+            if not all(vm > 0) or all(vm < 0):
+                Q1 += np.sum(Rm[vm > 0, :][:, vm > 0]) + np.sum(Rm[vm < 0, :][:, vm < 0])
+            if Q0 >= Q1:  # Si al partir obtuvimos un Q menor, devolvemos la última partición que hicimos
+                return [[ni for ni, vi in zip(nombres_s, v) if vi > 0],
+                        [ni for ni, vi in zip(nombres_s, v) if vi < 0]]
             else:
                 # Sino, repetimos para los subniveles
-                return(...)
+                comunidad1 = modularidad_iterativo(None, Rp, [nombres_s[i] for i in indices_pos])
+                comunidad2 = modularidad_iterativo(None, Rm, [nombres_s[i] for i in indices_neg])
+                return comunidad1 + comunidad2
