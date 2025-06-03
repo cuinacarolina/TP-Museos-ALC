@@ -149,18 +149,39 @@ def laplaciano_iterativo(A,niveles,nombres_s=None):
         return([nombres_s])
     else: # Sino:
         L = calcula_L(A) # Recalculamos el L
-        v,l,_ = ... # Encontramos el segundo autovector de L
-        # Recortamos A en dos partes, la que está asociada a el signo positivo de v y la que está asociada al negativo
-        Ap = ... # Asociado al signo positivo
-        Am = ... # Asociado al signo negativo
+        v,l,_ = metpot2(L) # Encontramos el segundo autovector de L
         
-        return(
-                laplaciano_iterativo(Ap,niveles-1,
-                                     nombres_s=[ni for ni,vi in zip(nombres_s,v) if vi>0]) +
-                laplaciano_iterativo(Am,niveles-1,
-                                     nombres_s=[ni for ni,vi in zip(nombres_s,v) if vi<0])
-                )        
+        # Separamos los nodos en dos grupos según el signo del segundo autovector
+        ind_p = []
+        ind_m = []
+        for i in range(len(v)):
+            if v[i] >= 0:
+                ind_p.append(i)
+            else:
+                ind_m.append(i)
+        
+        # Creamos las submatrices A_p y A_m
+        Ap = []
+        for i in ind_p:
+            fila = []
+            for j in ind_p:
+                fila.append(A[i][j])
+            Ap.append(fila)
+        
+        Am = []
+        for i in ind_m:
+            fila = []
+            for j in ind_m:
+                fila.append(A[i][j])
+            Am.append(fila)
+        
+        # Obtenemos los nombres de los nodos correspondientes a cada grupo
+        nombres_p = [nombres_s[i] for i in ind_p]
+        nombres_m = [nombres_s[i] for i in ind_m]
 
+        return laplaciano_iterativo(Ap, niveles - 1, nombres_p) + \
+              laplaciano_iterativo(Am, niveles - 1, nombres_m)
+#%%
 
 def modularidad_iterativo(A=None, R=None, nombres_s=None):
     # Recibe una matriz A, una matriz R de modularidad, y los nombres de los nodos
