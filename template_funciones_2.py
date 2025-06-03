@@ -42,20 +42,20 @@ def calcula_L(A):
     return L
 
 def calcula_P(A):
-    conexiones = 0
-    for fila in A:
-        for elemento in A:
-            conexiones += A[fila][elemento]
+    grados = np.sum(A, axis=1)
+    m = np.sum(A) / 2 
     n = A.shape[0]
     P = np.zeros((n, n))
-    K = calcula_matriz_K(A)
     for i in range(n):
-        P[i, i] = (K[i,i]*K[i,i])/conexiones
+        for j in range(n):
+            P[i, j] = (grados[i] * grados[j]) / (2 * m)
     return P
+
+
 def calcula_R(A):
     P = calcula_P(A)
-    R = A - P
-    return R
+    return A - P
+
 
 #%%
 def calcula_s(v):
@@ -80,7 +80,9 @@ def calcula_Q(R,v):
 #%%
 def metpot1(A,tol=1e-8,maxrep=np.inf):
    # Recibe una matriz A y calcula su autovalor de mayor módulo, con un error relativo menor a tol y-o haciendo como mucho maxrep repeticiones
-   n,_ = A.shape
+   A = np.atleast_2d(A)  # Asegura que A sea 2D
+   n, m = A.shape
+
    v = np.random.rand(n) # Generamos un vector de partida aleatorio, entre -1 y 1
    v = v/ np.linalg.norm(v) # Lo normalizamos
    
@@ -149,31 +151,26 @@ def laplaciano_iterativo(A,niveles,nombres_s=None):
         return([nombres_s])
     else: # Sino:
         L = calcula_L(A) # Recalculamos el L
-        v,l,_ = metpot2(L) # Encontramos el segundo autovector de L
+        v1,l1,_ = metpot1(A,tol=1e-8,maxrep=np.inf)
+        v,_,_ = metpot2(L,v1,l1)# Encontramos el segundo autovector de L
         
         # Separamos los nodos en dos grupos según el signo del segundo autovector
         ind_p = []
         ind_m = []
+        umbral = np.median(v)
         for i in range(len(v)):
-            if v[i] >= 0:
+            if v[i] >= umbral:
                 ind_p.append(i)
             else:
                 ind_m.append(i)
-        
+
+                
+        if len(ind_p) == 0 or len(ind_m) == 0:
+            return [list(nombres_s)]
+
         # Creamos las submatrices A_p y A_m
-        Ap = []
-        for i in ind_p:
-            fila = []
-            for j in ind_p:
-                fila.append(A[i][j])
-            Ap.append(fila)
-        
-        Am = []
-        for i in ind_m:
-            fila = []
-            for j in ind_m:
-                fila.append(A[i][j])
-            Am.append(fila)
+        Ap = np.array([[A[i][j] for j in ind_p] for i in ind_p])
+        Am = np.array([[A[i][j] for j in ind_m] for i in ind_m])
         
         # Obtenemos los nombres de los nodos correspondientes a cada grupo
         nombres_p = [nombres_s[i] for i in ind_p]
@@ -199,8 +196,10 @@ def modularidad_iterativo(A=None, R=None, nombres_s=None):
         return [nombres_s]
     else:
         v, l, _ = metpot1(R)  # Primer autovector y autovalor de R
+        print("Primer autovector:", v)
         # Modularidad Actual:
         Q0 = np.sum(R[v > 0, :][:, v > 0]) + np.sum(R[v < 0, :][:, v < 0])
+        print("Modularidad Q0:", Q0)
         if Q0 <= 0 or all(v > 0) or all(v < 0):  # Si la modularidad actual es menor a cero, o no se propone una partición, terminamos
             return [nombres_s]
         else:
@@ -210,6 +209,7 @@ def modularidad_iterativo(A=None, R=None, nombres_s=None):
             Rp = R[np.ix_(indices_pos, indices_pos)]  # Parte de R asociada a los valores positivos de v
             Rm = R[np.ix_(indices_neg, indices_neg)]  # Parte asociada a los valores negativos de v
             vp, lp, _ = metpot1(Rp)  # autovector principal de Rp
+            
             vm, lm, _ = metpot1(Rm)  # autovector principal de Rm
 
             # Calculamos el cambio en Q que se produciría al hacer esta partición
@@ -219,6 +219,7 @@ def modularidad_iterativo(A=None, R=None, nombres_s=None):
             if not all(vm > 0) or all(vm < 0):
                 Q1 += np.sum(Rm[vm > 0, :][:, vm > 0]) + np.sum(Rm[vm < 0, :][:, vm < 0])
             if Q0 >= Q1:  # Si al partir obtuvimos un Q menor, devolvemos la última partición que hicimos
+    
                 return [[ni for ni, vi in zip(nombres_s, v) if vi > 0],
                         [ni for ni, vi in zip(nombres_s, v) if vi < 0]]
             else:
@@ -226,3 +227,6 @@ def modularidad_iterativo(A=None, R=None, nombres_s=None):
                 comunidad1 = modularidad_iterativo(None, Rp, [nombres_s[i] for i in indices_pos])
                 comunidad2 = modularidad_iterativo(None, Rm, [nombres_s[i] for i in indices_neg])
                 return comunidad1 + comunidad2
+#%% pruebaç
+#print(laplaciano_iterativo(A_ejemplo,2))
+print(modularidad_iterativo(A_ejemplo))
