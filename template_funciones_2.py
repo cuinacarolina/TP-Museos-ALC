@@ -36,26 +36,34 @@ def calcula_matriz_K(A):
     #retorna K
     return K
 
+#%%
 def calcula_L(A):
     K = calcula_matriz_K(A)
     L = K - A
     return L
+L = calcula_L(A_ejemplo)
 
+#%%
 def calcula_P(A):
-    grados = np.sum(A, axis=1)
-    m = np.sum(A) / 2 
+    conexiones = 0
     n = A.shape[0]
-    P = np.zeros((n, n))
     for i in range(n):
         for j in range(n):
-            P[i, j] = (grados[i] * grados[j]) / (2 * m)
+            conexiones += A[i][j]
+    P = np.zeros((n, n))
+    K = calcula_matriz_K(A)
+    for i in range(n):
+        P[i, i] = (K[i, i] * K[i, i]) / conexiones
     return P
 
-
+P = calcula_P(A_ejemplo)
+#%%
 def calcula_R(A):
     P = calcula_P(A)
-    return A - P
+    R = A - P
+    return R
 
+R = calcula_R(A_ejemplo)
 
 #%%
 def calcula_s(v):
@@ -76,13 +84,24 @@ def calcula_Q(R,v):
     s = calcula_s(v)
     Q = s.T @ R @ s
     return Q
+#%%
 
+#Calculamos corte y modularidad para la A_ejemplo
+# Calculamos autovalores y autovectores
+valores, vectores = np.linalg.eig(A_ejemplo)
+
+# Tomamos el autovalor más grande y su correspondiente autovector
+indice_max = np.argmax(valores)
+autovalor_principal = valores[indice_max]
+autovector_principal = vectores[:, indice_max]
+
+lambda_ejemplo = calcula_lambda(L, autovector_principal)
+
+q_ejemplo = calcula_Q(R, autovector_principal)
 #%%
 def metpot1(A,tol=1e-8,maxrep=np.inf):
    # Recibe una matriz A y calcula su autovalor de mayor módulo, con un error relativo menor a tol y-o haciendo como mucho maxrep repeticiones
-   A = np.atleast_2d(A)  # Asegura que A sea 2D
-   n, m = A.shape
-
+   n,_ = A.shape
    v = np.random.rand(n) # Generamos un vector de partida aleatorio, entre -1 y 1
    v = v/ np.linalg.norm(v) # Lo normalizamos
    
@@ -102,6 +121,8 @@ def metpot1(A,tol=1e-8,maxrep=np.inf):
    if not nrep < maxrep:
       print('MaxRep alcanzado')
    return v1,l,nrep<maxrep
+
+autovalor_max_ejemplo = metpot1(A_ejemplo)
 #%%
 def deflaciona(A,tol=1e-8,maxrep=np.inf):
     # Recibe la matriz A, una tolerancia para el método de la potencia, y un número máximo de repeticiones
@@ -109,13 +130,16 @@ def deflaciona(A,tol=1e-8,maxrep=np.inf):
     deflA = A - l1 * np.outer(v1, v1) # Sugerencia, usar la funcion outer de numpy
     return deflA
 
+deflaciona_ejemplo = deflaciona(A_ejemplo)
+
 #%%
 def metpot2(A,v1,l1,tol=1e-8,maxrep=np.inf):
    # La funcion aplica el metodo de la potencia para buscar el segundo autovalor de A, suponiendo que sus autovectores son ortogonales
    # v1 y l1 son los primeors autovectores y autovalores de A}
    deflA = A - l1 * np.outer(v1, v1)
    return metpot1(deflA,tol,maxrep)
-
+v1,l1,_ = autovalor_max_ejemplo
+segundo_autovalor_ejemplo = metpot2(A_ejemplo, v1, l1)
 #%%
 def metpotI(A,mu,tol=1e-8,maxrep=np.inf):
     # Retorna el primer autovalor de la inversa de A + mu * I, junto a su autovector y si el método convergió.
@@ -125,7 +149,6 @@ def metpotI(A,mu,tol=1e-8,maxrep=np.inf):
     X = A + mu* I # Calculamos la matriz A shifteada en mu (plantilla)
     iX = np.linalg.inv(X)
     return metpot1(iX,tol=tol,maxrep=maxrep)
-
 #%%
 def metpotI2(A,mu,tol=1e-8,maxrep=np.inf):
    # Recibe la matriz A, y un valor mu y retorna el segundo autovalor y autovector de la matriz A, 
