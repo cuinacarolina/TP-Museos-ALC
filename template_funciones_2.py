@@ -1,5 +1,5 @@
 import numpy as np
-
+from scipy.linalg import solve_triangular
 # Matriz A de ejemplo
 A_ejemplo = np.array([
     [0, 1, 1, 1, 0, 0, 0, 0],
@@ -13,6 +13,50 @@ A_ejemplo = np.array([
 ])
 
 #%%
+""" FUNCIONES DEL TP1 """
+def calculaLU(A):
+    m=A.shape[0] # cantidad de filas de A
+    n=A.shape[1] # cantidad de columnas de A
+    #copia A
+    Ac = A.copy()
+    #si la matriz no es cuadrada termina la función
+    if m!=n:
+        print('Matriz no cuadrada')
+        return
+    #recorre las columnas de la matriz
+    for j in range (n):
+        #recorre las filas debajo de la diagonal
+        for i in range(j+1,n):
+            # Calcula el multiplicador de eliminación
+            Ac[i,j] = Ac[i,j] / Ac[j,j]
+            for k in range(j + 1, n):
+                # Resta el múltiplo correspondiente de la fila j a la fila i
+                Ac[i, k] = Ac[i, k] - Ac[i, j] * Ac[j, k]
+    L = np.tril(Ac,-1) + np.eye(m) #toma la parte inferior de Ac sin la diagonal y le suma la identidad para que la diagonal de L sea todo 1
+    U = np.triu(Ac) #toma la parte superior de Ac incluyendo la diagonal
+    return L, U
+
+# Calcula la inversa de una matriz cuadrada A utilizando su descomposición LU.
+# Recibe: A (matriz).
+# Retorna: A_inv (matriz): matriz inversa de A.
+
+def calcula_matriz_inversa(A):
+    # n dimensión de A
+    n = A.shape[0]
+    L, U = calculaLU(A) #Descompone A en L (lower) y U (upper
+    #matriz Identidad de nxn
+    I = np.eye(n)
+    #matriz de todos 0
+    A_inv = np.zeros_like(A)
+
+    for i in range(n):
+        e_i = I[:, i] # Toma una columna de la identidad
+        y = solve_triangular(L, e_i, lower=True)    # Resuelve Ly = e_i
+        x_i = solve_triangular(U, y, lower=False)   # Resuelve Ux = y
+        A_inv[:, i] = x_i # Guarda esa columna en la inversa
+    #retorna A_inv
+    return A_inv
+
 def construye_adyacencia(D,m):
     #copia D
     D = D.copy()
@@ -85,7 +129,7 @@ def calcula_Q(R,v):
     Q = s.T @ R @ s
     return Q
 #%%
-
+#solo es para el ejemplo
 #Calculamos corte y modularidad para la A_ejemplo
 # Calculamos autovalores y autovectores
 valores, vectores = np.linalg.eig(A_ejemplo)
@@ -147,7 +191,7 @@ def metpotI(A,mu,tol=1e-8,maxrep=np.inf):
     n,_ = A.shape #tomo la dimension de A
     I = np.eye(n) #creo la matriz identidad de dimension n
     X = A + mu* I # Calculamos la matriz A shifteada en mu (plantilla)
-    iX = np.linalg.inv(X)
+    iX = calcula_matriz_inversa(X)
     return metpot1(iX,tol=tol,maxrep=maxrep)
 #%%
 def metpotI2(A,mu,tol=1e-8,maxrep=np.inf):
@@ -157,12 +201,13 @@ def metpotI2(A,mu,tol=1e-8,maxrep=np.inf):
    n,_ = A.shape #tomo la dimension de A
    I = np.eye(n) #creo la matriz identidad de dimension n
    X = A + mu* I # Calculamos la matriz A shifteada en mu (plantilla)
-   iX = np.linalg.inv(X) # La invertimos
+   iX = calcula_matriz_inversa(X) # La invertimos
    defliX = deflaciona(iX,tol=1e-8,maxrep=np.inf) # La deflacionamos
    v,l,_ = metpot1(defliX,tol,maxrep)  # Buscamos su segundo autovector
    l = 1/l # Reobtenemos el autovalor correcto
    l -= mu
    return v,l,_
+#%%
 
 def laplaciano_iterativo(A,niveles,nombres_s=None):
     # Recibe una matriz A, una cantidad de niveles sobre los que hacer cortes, y los nombres de los nodos
@@ -180,20 +225,18 @@ def laplaciano_iterativo(A,niveles,nombres_s=None):
         # Separamos los nodos en dos grupos según el signo del segundo autovector
         ind_p = []
         ind_m = []
-        umbral = np.median(v)
         for i in range(len(v)):
-            if v[i] >= umbral:
+            if v[i] >= 0:
                 ind_p.append(i)
-            else:
+            if v[i] < 0:
                 ind_m.append(i)
-
                 
         if len(ind_p) == 0 or len(ind_m) == 0:
             return [list(nombres_s)]
 
         # Creamos las submatrices A_p y A_m
-        Ap = np.array([[A[i][j] for j in ind_p] for i in ind_p])
-        Am = np.array([[A[i][j] for j in ind_m] for i in ind_m])
+        Ap = A[np.ix_(ind_p, ind_p)]
+        Am = A[np.ix_(ind_m, ind_m)]
         
         # Obtenemos los nombres de los nodos correspondientes a cada grupo
         nombres_p = [nombres_s[i] for i in ind_p]
@@ -202,54 +245,61 @@ def laplaciano_iterativo(A,niveles,nombres_s=None):
         return laplaciano_iterativo(Ap, niveles - 1, nombres_p) + \
               laplaciano_iterativo(Am, niveles - 1, nombres_m)
 #%%
-
-def modularidad_iterativo(A=None, R=None, nombres_s=None):
+def modularidad_iterativo(A=None,R=None,nombres_s=None):
     # Recibe una matriz A, una matriz R de modularidad, y los nombres de los nodos
     # Retorna una lista con conjuntos de nodos representando las comunidades.
 
     if A is None and R is None:
         print('Dame una matriz')
-        return(np.nan)
+        return np.nan
     if R is None:
         R = calcula_R(A)
     if nombres_s is None:
-        nombres_s = range(R.shape[0])
+        nombres_s = list(range(R.shape[0]))
+    else:
+        nombres_s = list(nombres_s)
     # Acá empieza lo bueno
     if R.shape[0] == 1: # Si llegamos al último nivel
-        return [nombres_s]
-    else:
-        v, l, _ = metpot1(R)  # Primer autovector y autovalor de R
-        print("Primer autovector:", v)
-        # Modularidad Actual:
-        Q0 = np.sum(R[v > 0, :][:, v > 0]) + np.sum(R[v < 0, :][:, v < 0])
-        print("Modularidad Q0:", Q0)
-        if Q0 <= 0 or all(v > 0) or all(v < 0):  # Si la modularidad actual es menor a cero, o no se propone una partición, terminamos
-            return [nombres_s]
-        else:
-            ## Hacemos como con L, pero usando directamente R para poder mantener siempre la misma matriz de modularidad
-            indices_pos = [i for i in range(len(v)) if v[i] > 0]
-            indices_neg = [i for i in range(len(v)) if v[i] < 0]
-            Rp = R[np.ix_(indices_pos, indices_pos)]  # Parte de R asociada a los valores positivos de v
-            Rm = R[np.ix_(indices_neg, indices_neg)]  # Parte asociada a los valores negativos de v
-            vp, lp, _ = metpot1(Rp)  # autovector principal de Rp
-            
-            vm, lm, _ = metpot1(Rm)  # autovector principal de Rm
-
-            # Calculamos el cambio en Q que se produciría al hacer esta partición
-            Q1 = 0
-            if not all(vp > 0) or all(vp < 0):
-                Q1 = np.sum(Rp[vp > 0, :][:, vp > 0]) + np.sum(Rp[vp < 0, :][:, vp < 0])
-            if not all(vm > 0) or all(vm < 0):
-                Q1 += np.sum(Rm[vm > 0, :][:, vm > 0]) + np.sum(Rm[vm < 0, :][:, vm < 0])
-            if Q0 >= Q1:  # Si al partir obtuvimos un Q menor, devolvemos la última partición que hicimos
+        return [list(nombres_s)]
     
-                return [[ni for ni, vi in zip(nombres_s, v) if vi > 0],
-                        [ni for ni, vi in zip(nombres_s, v) if vi < 0]]
-            else:
-                # Sino, repetimos para los subniveles
-                comunidad1 = modularidad_iterativo(None, Rp, [nombres_s[i] for i in indices_pos])
-                comunidad2 = modularidad_iterativo(None, Rm, [nombres_s[i] for i in indices_neg])
-                return comunidad1 + comunidad2
+    v,l,_ = metpot1(R) # Primer autovector y autovalor de R
+    
+    # Dividir según signo
+    ind_p = [i for i in range(len(v)) if v[i] >= 0]
+    ind_m = [i for i in range(len(v)) if v[i] < 0]
+    
+    if len(ind_p) == 0 or len(ind_m) == 0:
+        return [list(nombres_s)]
+    
+    #Modularidad actual
+    Q0 = np.sum(R[np.ix_(ind_p, ind_p)]) + np.sum(R[np.ix_(ind_m, ind_m)])
+
+    # Creamos las submatrices A_p y A_m
+    Rp = R[np.ix_(ind_p, ind_p)] # Parte de R asociada a los valores positivos de v
+    Rm = R[np.ix_(ind_m, ind_m)] # Parte asociada a los valores negativos de v
+            
+    vp,lp,_ = metpot1(Rp)  # autovector principal de Rp
+    vm,lm,_ = metpot1(Rm) # autovector principal de Rm
+        
+    # Calculamos el cambio en Q que se produciría al hacer esta partición
+    Q1 = 0
+    
+    if not (all(vp >= 0) or all(vp < 0)):
+        ind_vp_p = [i for i in range(len(vp)) if vp[i] >= 0]
+        ind_vp_m = [i for i in range(len(vp)) if vp[i] < 0]
+        Q1 += np.sum(Rp[np.ix_(ind_vp_p, ind_vp_p)]) + np.sum(Rp[np.ix_(ind_vp_m, ind_vp_m)])
+
+    if not (all(vm >= 0) or all(vm < 0)):
+        ind_vm_p = [i for i in range(len(vm)) if vm[i] >= 0]
+        ind_vm_m = [i for i in range(len(vm)) if vm[i] < 0]
+        Q1 += np.sum(Rm[np.ix_(ind_vm_p, ind_vm_p)]) + np.sum(Rm[np.ix_(ind_vm_m, ind_vm_m)])
+
+    if Q0 >= Q1:
+        return [[nombres_s[i] for i in ind_p], [nombres_s[i] for i in ind_m]]
+    else:
+        nombres_p = [nombres_s[i] for i in ind_p]
+        nombres_m = [nombres_s[i] for i in ind_m]
+        return modularidad_iterativo(R=Rp, nombres_s=nombres_p) + modularidad_iterativo(R=Rm, nombres_s=nombres_m)
 #%% pruebaç
 #print(laplaciano_iterativo(A_ejemplo,2))
 print(modularidad_iterativo(A_ejemplo))
