@@ -1,5 +1,10 @@
 import numpy as np
 from scipy.linalg import solve_triangular
+import matplotlib.pyplot as plt
+import pandas as pd # Para leer archivos
+import geopandas as gpd # Para hacer cosas geográficas
+import networkx as nx # Construcción de la red en NetworkX
+from scipy.linalg import solve_triangular
 # Matriz A de ejemplo
 A_ejemplo = np.array([
     [0, 1, 1, 1, 0, 0, 0, 0],
@@ -11,7 +16,16 @@ A_ejemplo = np.array([
     [0, 0, 0, 0, 1, 1, 0, 1],
     [0, 0, 0, 0, 1, 1, 1, 0]
 ])
-
+#%%
+# Leemos el archivo, retenemos aquellos museos que están en CABA, y descartamos aquellos que no tienen latitud y longitud
+museos = gpd.read_file('https://raw.githubusercontent.com/MuseosAbiertos/Leaflet-museums-OpenStreetMap/refs/heads/principal/data/export.geojson')
+barrios = gpd.read_file('https://cdn.buenosaires.gob.ar/datosabiertos/datasets/ministerio-de-educacion/barrios/barrios.geojson')
+# En esta línea:
+# Tomamos museos, lo convertimos al sistema de coordenadas de interés, extraemos su geometría (los puntos del mapa),
+# calculamos sus distancias a los otros puntos de df, redondeamos (obteniendo distancia en metros), y lo convertimos a un array 2D de numpy
+D = museos.to_crs("EPSG:22184").geometry.apply(lambda g: museos.to_crs("EPSG:22184").distance(g)).round().to_numpy()
+# Leemos el archivo vector w
+#w = pd.read_csv("visitas.txt", sep="\t", header=None).values.flatten()
 #%%
 """ FUNCIONES DEL TP1 """
 def calculaLU(A):
@@ -303,20 +317,63 @@ def modularidad_iterativo(A=None,R=None,nombres_s=None):
 #%% pruebaç
 #print(laplaciano_iterativo(A_ejemplo,2))
 print(modularidad_iterativo(A_ejemplo))
-
-#%%
 #%%
 lista_m = [3,5,10,50]
 cantidad_de_grupos = modularidad_iterativo(A_ejemplo)
 niveles = cantidad_de_grupos
 
-def comunidades(D,lista ,int):
-    for i in lista:
-        A = construye_adyacencia(D, i)
-       #A_prima = (1/2*(A + A.T)) innecesario porque A+A.T = 2A entonces 1/2*2A = A
-        if int == 0:
-           laplaciano_iterativo(A, niveles)
+#primero hacemos la funcion celling:
+def simetriza_y_ceiling(A):
+    A_moño = 0.5 * (A + A.T)
+    return np.ceil(A_moño)
+
+#Calcula y grafica las comunidades detectadas para distintos valores de m.
+#Parámetros:
+#  - D: matriz de distancias entre nodos
+#  - lista_m: lista con valores de m para construir A
+#  - metodo: 0 para Laplaciano, 1 para Modularidad
+#  - niveles: cantidad de cortes para el método Laplaciano
+  
+def comunidades_subplot(D, lista_m, metodo, niveles=5):
+    if metodo == 0:
+        nombre_metodo = "Laplaciano" 
+    else:
+        nombre_metodo = "Modularidad"
+
+    fig, axes = plt.subplots(1, len(lista_m), figsize=(5 * len(lista_m), 7))
+    if len(lista_m) == 1:
+        axes = [axes]  # por si hay un solo subplot
+
+    for i, m in enumerate(lista_m):
+        print(f"\n--- m = {m} ---")
+        A = construye_adyacencia(D, m)
+        A_moño = simetriza_y_ceiling(A)
+
+        if metodo == 0:
+            comunidades_detectadas = laplaciano_iterativo(A_moño, niveles=niveles)
         else:
-            modularidad_iterativo(A)
-        #HACER GRAFICOS
-    #return grafico
+            comunidades_detectadas = modularidad_iterativo(A_moño)
+
+        ax = axes[i]
+        barrios.to_crs("EPSG:22184").boundary.plot(ax=ax, color='gray', linewidth=0.5)
+        posiciones = {i: (museos.loc[i, "x"], museos.loc[i, "y"]) for i in range(len(A))}
+        G = nx.from_numpy_array(A)
+        colores = plt.cm.get_cmap("tab20", len(comunidades_detectadas))
+
+        for j, grupo in enumerate(comunidades_detectadas):
+            nx.draw_networkx_nodes(G, posiciones,nodelist=grupo,node_color=[colores(j)],
+                                   node_size=77,
+                                   ax=ax)
+                                   
+        nx.draw_networkx_edges(G, posiciones, ax=ax, alpha=0.5, width=0.5)
+        ax.set_title(f"{nombre_metodo} m={m}")
+        
+
+    plt.suptitle(f"Comunidades detectadas con método de {nombre_metodo}", fontsize=17, y=1)
+    plt.tight_layout()
+    plt.show()
+
+
+
+comunidades_subplot(D, [3,5,10,50], metodo=0)
+comunidades_subplot(D, [3,5,10,50], metodo=1)
