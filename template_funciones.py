@@ -254,9 +254,6 @@ def ejercicio_3_b(D, alpha, rango_m):
     # Muestra la imagen final
     plt.show()
     return                                                                                                                                                                                 
-alpha = 1/5
-rango_m = [1,3,5,10]
-ejercicio_3_b(D, alpha, rango_m)
 
 # Visualiza múltiples redes de museos generadas con distintos valores de alpha (α),
 # mostrando los tamaños de los nodos según los valores de PageRank.
