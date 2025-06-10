@@ -209,7 +209,7 @@ def modularidad_iterativo(A=None, R=None, nombres_s=None):
     ind_m = [i for i in range(len(v)) if v[i] < 0]
     # Si no se puede dividir, devolver comunidad entera
     if len(ind_p) == 0 or len(ind_m) == 0:
-        return list(nombres_s)
+        return [nombres_s]
 
     #Modularidad ganada por esta divisiÃ³n
     Q = np.sum(R[np.ix_(ind_p, ind_p)]) + np.sum(R[np.ix_(ind_m, ind_m)])
