@@ -234,6 +234,8 @@ def simetriza_y_ceiling(A):
     A_moño = np.ceil(A_sym)         
     return A_moño
 
+#%%
+
 #Calcula y grafica las comunidades detectadas para distintos valores de m.
 #ParÃ¡metros:
 #  -D: matriz de distancias entre nodos
@@ -249,49 +251,68 @@ def comunidades_subplot(D, lista_m, metodo, niveles=4):
 
     fig, axes = plt.subplots(1, len(lista_m), figsize=(7 * len(lista_m), 7))
     if len(lista_m) == 1:
-        axes = [axes]  #por si hay un solo subplot
+        axes = [axes]
 
-    # Precalculo coordenadas para museos
-    museos['x'] = museos.geometry.x 
-    museos['y'] = museos.geometry.y
-    posiciones = {idx: (row['x'], row['y']) for idx, row in museos.iterrows()}
+    # Reproyecto ambos GeoDataFrames
+    museos_local = museos.to_crs("EPSG:22184").sort_index()
+    barrios_local = barrios.to_crs("EPSG:22184")
+
+    # Calculo coordenadas de nodos a partir de la geometría reproyectada
+    museos_local['x'] = museos_local.geometry.x
+    museos_local['y'] = museos_local.geometry.y
+    posiciones = {idx: (row['x'], row['y']) for idx, row in museos_local.iterrows()}
 
     for i, m in enumerate(lista_m):
+        # Construcción de matriz de adyacencia y comunidad
         A = tp1.construye_adyacencia(D, m)
         A_moño = simetriza_y_ceiling(A)
 
         if metodo == 0:
             comunidades_detectadas = laplaciano_iterativo(A_moño, niveles=niveles)
-            
         else:
             comunidades_detectadas = modularidad_iterativo(A_moño)
 
         ax = axes[i]
-        barrios.to_crs("EPSG:22184").boundary.plot(ax=ax, color='lightgray', linewidth=0.7)
+
+        # 1. Dibujar el mapa de barrios (fondo)
+        barrios_local.boundary.plot(ax=ax, color='lightgray', linewidth=0.9)
+
+        # 2. Crear el grafo y asegurar correspondencia de índices
         G = nx.from_numpy_array(A)
+        mapping = dict(zip(range(len(museos_local)), museos_local.index))
+        G = nx.relabel_nodes(G, mapping)
+
         colores = plt.get_cmap("tab20", len(comunidades_detectadas))
-        
+
+        # 3. Dibujar aristas primero
+        nx.draw_networkx_edges(G, posiciones, ax=ax, alpha=0.3, width=0.3)
+
+        # 4. Dibujar nodos por comunidad
         for j, grupo in enumerate(comunidades_detectadas):
             nx.draw_networkx_nodes(
                 G, posiciones,
                 nodelist=grupo,
                 node_color=[colores(j)],
                 node_size=75,
-                ax=ax
+                ax=ax,
+                alpha=0.8
             )
 
-        nx.draw_networkx_edges(G, posiciones, ax=ax, alpha=0.3, width=0.3)
+        # Título del subplot
         ax.set_title(f"{nombre_metodo} m={m}, comunidades detectadas: {len(comunidades_detectadas)}", fontsize=11)
 
-        # Ajuste de límites geográficos
+        # Ajustar los límites del mapa
         xs, ys = zip(*posiciones.values())
         ax.set_xlim(min(xs) - 0.01, max(xs) + 0.01)
         ax.set_ylim(min(ys) - 0.01, max(ys) + 0.01)
+        ax.set_aspect("equal")
 
+    # Título general y layout
     plt.suptitle(f"Comunidades detectadas con método de {nombre_metodo}", fontsize=16)
-    plt.tight_layout(rect=[0, 0, 1, 0.96])  # deja espacio para el título
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
     plt.show()
 
-
-comunidades_subplot(D, [3,5,10,50], 0)
-comunidades_subplot(D, [3,5,10,50], 1)
+#%%
+comunidades_subplot(D, [3,5,10,50], 0) #METODO LAPLACIANO
+#%%
+comunidades_subplot(D, [3,5,10,50], 1)# METODO MODULARIDAD
