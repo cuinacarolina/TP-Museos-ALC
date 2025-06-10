@@ -249,7 +249,7 @@ def comunidades_subplot(D, lista_m, metodo, niveles=4):
 
     fig, axes = plt.subplots(1, len(lista_m), figsize=(7 * len(lista_m), 7))
     if len(lista_m) == 1:
-        axes = [axes]  # por si hay un solo subplot
+        axes = [axes]  #por si hay un solo subplot
 
     # Precalculo coordenadas para museos
     museos['x'] = museos.geometry.x 

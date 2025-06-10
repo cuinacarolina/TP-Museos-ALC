@@ -41,7 +41,6 @@ def construye_adyacencia(D,m):
         l.append(fila<=fila[np.argsort(fila)[m]] ) # elige todos los nodos que estén a una distancia menor o igual a la del m-esimo más cercano
     A = np.asarray(l).astype(int) # Convierte a entero
     np.fill_diagonal(A,0) # Borra diagonal para eliminar autolinks
-    print(A)
     return(A)
 
 #%%
