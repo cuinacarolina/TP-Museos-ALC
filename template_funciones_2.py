@@ -360,8 +360,7 @@ def simetriza_y_ceiling(A):
 # niveles: cantidad de cortes para el método Laplaciano
 # Retorno:
 # Grafico: Subplots uno para cada valor de m. Diferenciando con colores las distintas comunidades     
-
-def comunidades_subplot(D, lista_m, metodo, niveles=4):
+def comunidades_subplot(D, lista_m, metodo,niveles):
     if metodo == 0:
         nombre_metodo = "Laplaciano" 
     else:
@@ -384,9 +383,9 @@ def comunidades_subplot(D, lista_m, metodo, niveles=4):
         #construimos de matriz de adyacencia y comunidad
         A = tp1.construye_adyacencia(D, m)
         A_moño = simetriza_y_ceiling(A)
-
+        niveles = np.log2(len(modularidad_iterativo(A_moño))) 
         if metodo == 0:
-            comunidades_detectadas = laplaciano_iterativo(A_moño, niveles=niveles)
+            comunidades_detectadas = laplaciano_iterativo(A_moño, niveles)
         else:
             comunidades_detectadas = modularidad_iterativo(A_moño)
 
