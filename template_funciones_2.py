@@ -360,7 +360,8 @@ def simetriza_y_ceiling(A):
 # niveles: cantidad de cortes para el método Laplaciano
 # Retorno:
 # Grafico: Subplots uno para cada valor de m. Diferenciando con colores las distintas comunidades     
-def comunidades_subplot(D, lista_m, metodo,niveles):
+
+def comunidades_subplot(D, lista_m, metodo):
     if metodo == 0:
         nombre_metodo = "Laplaciano" 
     else:
