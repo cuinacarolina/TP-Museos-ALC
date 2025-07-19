@@ -135,36 +135,34 @@ def calcula_Q(R, v):
 # l = autovalor dominante estimado
 # nrep < maxrep = booleano que indica si el método convergió dentro de maxrep iteraciones
 
-def metpot1(A, tol=1e-8, maxrep=np.inf):
+def metpot1(A, tol=1e-8, maxrep=1000, seed: int = None):
+    if seed is not None:
+        np.random.seed(seed)
+        
     n, _ = A.shape
-    v = np.random.rand(n)  #Generamos un vector inicial aleatorio
-    v = v / np.linalg.norm(v)  #Normalización del vector inicial
+    v = np.random.uniform(-1,1,n)  # Generamos un vector inicial aleatorio
+    v = v / np.linalg.norm(v)  # Normalización del vector inicial
 
-    v1 = A @ v  #Primera iteración: multiplicación por A
-    v1 = v1 / np.linalg.norm(v1)  #Normalización del nuevo vector
-    l = (v.T @ A @ v) / (v.T @ v)  #Estimación inicial del autovalor (producto de Rayleigh)
+    v1 = A @ v  # Primera iteración: multiplicación por A
+    v1 = v1 / np.linalg.norm(v1)  # Normalización del nuevo vector
+    l = v @ (A @ v)  # Estimación inicial del autovalor (producto de Rayleigh)
     
-    nrep = 0  #Contador de iteraciones
-    l1 = (v1.T @ A @ v1) / (v1.T @ v1)  #Nueva estimación del autovalor en la siguiente iteración
+    nrep = 0  # Contador de iteraciones
+    l1 = v1 @ (A@v1) # Nueva estimación del autovalor en la siguiente iteración
 
-    #Iteramos hasta que el error relativo sea menor que la tolerancia o hasta alcanzar el máximo de repeticiones
+    # Iteramos hasta que el error relativo sea menor que la tolerancia o hasta alcanzar el máximo de repeticiones
     while np.abs(l1 - l) / np.abs(l) > tol and nrep < maxrep:
-        norm_v1 = np.linalg.norm(v1)
-        if norm_v1 < 1e-12:  #Evitamos división por cero o errores numéricos
-            print("Norma casi cero: v1 =", v1)
-            return v1, 0, False  #Salida de emergencia si la norma es demasiado pequeña
-
-        v = v1.copy()  #Actualizamos el vector
-        l = l1         #Actualizamos el autovalor anterior
-        v1 = A @ v1    #Nueva multiplicación
-        v1 = v1 / np.linalg.norm(v1)  #Normalización
-        l1 = (v1.T @ A @ v1) / (v1.T @ v1)  #Nuevo estimado del autovalor
-        nrep += 1  #Incrementamos el contador
+        v = v1  # Actualizamos el vector
+        l = l1         # Actualizamos el autovalor anterior
+        v1 = A @ v1    # Nueva multiplicación
+        v1 = v1 / np.linalg.norm(v1)  # Normalización
+        l1 = v1 @ (A @ v1)  # Nuevo estimado del autovalor
+        nrep += 1  # Incrementamos el contador
 
     if not nrep < maxrep:
-        print('MaxRep alcanzado')  #por si no convergió
+        print('MaxRep alcanzado')  # Por si no convergió
 
-    return v1, l, nrep < maxrep  #Devolvemos el autovector, el autovalor y si se logró la convergencia
+    return v1, l, nrep < maxrep  # Devolvemos el autovector, el autovalor y si se logró la convergencia
 
 
 #%%
@@ -176,11 +174,10 @@ def metpot1(A, tol=1e-8, maxrep=np.inf):
 # Retorna:
 # deflA = matriz deflacionada, es decir, A sin el componente asociado al autovalor dominante
 
-def deflaciona(A, tol=1e-8, maxrep=np.inf):
-    v1, l1, _ = metpot1(A, tol, maxrep)  #Obtenemos el autovector y autovalor dominante usando el método de la potencia
+def deflaciona(A, tol=1e-8, maxrep=np.inf, seed: int = None):
+    v1, l1, _ = metpot1(A, tol, maxrep,seed)  #Obtenemos el autovector y autovalor dominante usando el método de la potencia
     deflA = A - l1 * np.outer(v1, v1)  #Aplicamos la fórmula de deflación: A - λ * v * vᵗ
     return deflA
-
 
 #%%
 # Aplica deflación sobre la matriz A para estimar el segundo autovalor y su autovector usando el método de la potencia.
@@ -193,9 +190,9 @@ def deflaciona(A, tol=1e-8, maxrep=np.inf):
 # Retorna:
 # v, l, maxrep = autovector estimado, autovalor asociado y si el método de la potencia convergió
 
-def metpot2(A, v1, l1, tol=1e-8, maxrep=np.inf):
+def metpot2(A, v1, l1, tol=1e-8, maxrep=np.inf, seed: int = None):
     deflA = A - l1 * np.outer(v1, v1)  #Deflación: eliminamos la contribución del autovalor dominante
-    return metpot1(deflA, tol, maxrep)
+    return metpot1(deflA, tol, maxrep, seed = seed)
 
 
 #%%
@@ -208,12 +205,12 @@ def metpot2(A, v1, l1, tol=1e-8, maxrep=np.inf):
 # Retorna:
 # v, l, maxrep = autovector estimado, autovalor asociado (de A + mu*I), y si el método convergió
 
-def metpotI(A, mu, tol=1e-8, maxrep=np.inf):
+def metpotI(A, mu, tol=1e-8, maxrep=np.inf, seed: int = None):
     n, _ = A.shape
     I = np.eye(n)  #Matriz identidad
     X = A + mu * I  #Shift de la matriz
     iX = tp1.calcula_matriz_inversa(X)  #Invertimos A + mu * I
-    return metpot1(iX, tol=tol, maxrep=maxrep)  #Aplicamos método de la potencia sobre la inversa
+    return metpot1(iX, tol=tol, maxrep=maxrep, seed = seed)  #Aplicamos método de la potencia sobre la inversa
 
 
 #%%
@@ -229,13 +226,13 @@ def metpotI(A, mu, tol=1e-8, maxrep=np.inf):
 # l = segundo autovalor más chico de A (ajustado después del inverso y del shift)
 # exito = booleano que indica si el método de la potencia convergió
 
-def metpotI2(A, mu, tol=1e-8, maxrep=np.inf):
+def metpotI2(A, mu, tol=1e-8, maxrep=np.inf, seed: int = None):
     n, _ = A.shape
     I = np.eye(n)  
     X = A + mu * I  #sumamos mu (pues conserva los autovalores)
     iX = tp1.calcula_matriz_inversa(X)  #Invertimos A + mu*I
-    defliX = deflaciona(iX, tol=tol, maxrep=maxrep)  #Deflación para remover el primer autovalor dominante
-    v, l, éxito = metpot1(defliX, tol, maxrep)  #Segundo autovector de la inversa
+    defliX = deflaciona(iX, tol=tol, maxrep=maxrep, seed = seed)  #Deflación para remover el primer autovalor dominante
+    v, l, éxito = metpot1(defliX, tol, maxrep,seed)  #Segundo autovector de la inversa
     l = 1 / l  #Revertimos la inversión
     l -= mu  # "Quitamos" mu para obtener el autovalor original de A
     return v, l, éxito
@@ -250,7 +247,7 @@ def metpotI2(A, mu, tol=1e-8, maxrep=np.inf):
 # Retorna:
 # Lista de listas, donde cada sublista contiene los nombres de los nodos de una comunidad.
 
-def laplaciano_iterativo(A, niveles, nombres_s=None):
+def laplaciano_iterativo(A, niveles, nombres_s=None,seed: int = None):
     if nombres_s is None:  #Si no se proveyeron nombres, asignamos índices del 0 al N-1
         nombres_s = range(A.shape[0])
 
@@ -258,9 +255,9 @@ def laplaciano_iterativo(A, niveles, nombres_s=None):
         #Si llegamos a un nodo aislado o a la profundidad deseada, retornamos la comunidad actual
         return [list(nombres_s)]
     else:
-        L = calcula_L(A)  # alculamos la matriz de Laplaciano
-        v1, l1, _ = metpot1(A, tol=1e-8, maxrep=np.inf)  #Primer autovector (necesario para deflación)
-        v, _, _ = metpot2(L, v1, l1)  #Segundo autovector del Laplaciano, útil para separar comunidades
+        L = calcula_L(A)
+        mu = 1e-5
+        v, _, _ = metpotI2(L, mu,seed = seed)  # (segundo autovector más chico)
 
         #Separamos nodos en función del signo del autovector
         ind_p = []  #Índices con coordenadas positivas o cero
@@ -284,8 +281,8 @@ def laplaciano_iterativo(A, niveles, nombres_s=None):
         nombres_m = [nombres_s[i] for i in ind_m]
 
         #Llamamos recursivamente a la función para seguir particionando
-        return laplaciano_iterativo(Ap, niveles - 1, nombres_p) + \
-               laplaciano_iterativo(Am, niveles - 1, nombres_m)
+        return laplaciano_iterativo(Ap, niveles - 1, nombres_p,seed = seed) + \
+               laplaciano_iterativo(Am, niveles - 1, nombres_m,seed = seed)
 
 #%%
 # Realiza partición recursiva del grafo usando el método espectral basado en la matriz de modularidad.
@@ -296,46 +293,67 @@ def laplaciano_iterativo(A, niveles, nombres_s=None):
 # Retorna:
 # Lista de listas, donde cada sublista contiene los nombres de los nodos de una comunidad.
 
-def modularidad_iterativo(A=None, R=None, nombres_s=None):
+def modularidad_iterativo(A=None, R=None, nombres_s=None, seed: int = None):
+
+    #si no se pasa A ni R, no se puede trabajar
+    if A is None and R is None:
+        print('Dame una matriz')
+        return np.nan
+
+    #calculamos la matriz de modularidad si no fue pasada
     if R is None:
-        R = calcula_R(A)  #Calculamos matriz modularidad si no está dada
+        R = calcula_R(A)
+
+    #si no se pasan nombres, usamos índices por defecto
     if nombres_s is None:
-        nombres_s = list(range(R.shape[0]))  #Índices por defecto
+        nombres_s = list(range(R.shape[0]))
     else:
         nombres_s = list(nombres_s)
 
-    #Caso base: si la matriz es 1x1 o menos, no se puede dividir
-    if R.shape[0] <= 1:
+    #si llegamos a un solo nodo, devolvemos la comunidad
+    if R.shape[0] == 1:
         return [nombres_s]
 
-    #Calculamos el autovector principal de R
-    v, l, _ = metpot1(R)
+    #obtenemos el primer autovector y autovalor de R
+    v, l, _ = metpot1(R, seed=seed)
 
-    #Dividimos los nodos según el signo del autovector
-    ind_p = [i for i in range(len(v)) if v[i] >= 0]
+    #calculamos la modularidad actual Q0 de la partición propuesta por el autovector
+    Q0 = np.sum(R[v > 0][:, v > 0]) + np.sum(R[v < 0][:, v < 0])
+
+    #si no mejora o no se puede dividir, devolvemos la comunidad entera
+    if Q0 <= 0 or all(v > 0) or all(v < 0):
+        return [nombres_s]
+
+    #dividimos la matriz R según el signo del autovector
+    ind_p = [i for i in range(len(v)) if v[i] > 0]
     ind_m = [i for i in range(len(v)) if v[i] < 0]
-
-    #Si no es posible hacer una división, devolvemos la comunidad completa
-    if len(ind_p) == 0 or len(ind_m) == 0:
-        return [nombres_s]
-
-    #Calculamos la modularidad ganada al hacer esta división
-    Q = np.sum(R[np.ix_(ind_p, ind_p)]) + np.sum(R[np.ix_(ind_m, ind_m)])
-
-    #Si la modularidad no mejora, no dividimos y devolvemos la comunidad entera
-    if Q <= 0:
-        return [nombres_s]
-
-    #Submatrices y sublistas de nombres para las comunidades resultantes
-    nombres_p = [nombres_s[i] for i in ind_p]
-    nombres_m = [nombres_s[i] for i in ind_m]
     Rp = R[np.ix_(ind_p, ind_p)]
     Rm = R[np.ix_(ind_m, ind_m)]
 
-    #Llamadas recursivas para seguir dividiendo
-    return modularidad_iterativo(R=Rp, nombres_s=nombres_p) + \
-           modularidad_iterativo(R=Rm, nombres_s=nombres_m)
+    #obtenemos los autovectores principales de las submatrices
+    vp, lp, _ = metpot1(Rp, seed=seed)
+    vm, lm, _ = metpot1(Rm, seed=seed)
 
+    #calculamos la nueva modularidad Q1 tras dividir
+    Q1 = 0
+    if not all(vp > 0) and not all(vp < 0):
+        Q1 += np.sum(Rp[vp > 0][:, vp > 0]) + np.sum(Rp[vp < 0][:, vp < 0])
+    if not all(vm > 0) and not all(vm < 0):
+        Q1 += np.sum(Rm[vm > 0][:, vm > 0]) + np.sum(Rm[vm < 0][:, vm < 0])
+
+    #si al dividir no se mejora, nos quedamos con la división actual
+    if Q0 >= Q1:
+        return [
+            [nombres_s[i] for i in ind_p],
+            [nombres_s[i] for i in ind_m]
+        ]
+
+    #si sí mejora, aplicamos recursivamente en cada grupo
+    nombres_p = [nombres_s[i] for i in ind_p]
+    nombres_m = [nombres_s[i] for i in ind_m]
+
+    return modularidad_iterativo(R=Rp, nombres_s=nombres_p, seed=seed) + \
+           modularidad_iterativo(R=Rm, nombres_s=nombres_m, seed=seed)
 
 #%%
 # Simetriza una matriz y aplica celilng 
@@ -343,14 +361,10 @@ def modularidad_iterativo(A=None, R=None, nombres_s=None):
 # A = matriz cuadrada, posiblemente no simétrica y con entradas reales
 # Retorna:
 # A_moño = matriz simétrica con entradas enteras, donde cada elemento es el techo del promedio simétrico
-
 def simetriza_y_ceiling(A):
     A_sym = 0.5 * (A + A.T) #Promediamos A con su transpuesta para simetrizar
     A_moño = np.ceil(A_sym) #Aplicamos la función np.ceil 
     return A_moño
-
-
-#%%
 
 # Calcula y grafica las comunidades detectadas para distintos valores de m.
 # Recibe:
@@ -359,15 +373,15 @@ def simetriza_y_ceiling(A):
 # metodo: 0 para Laplaciano, 1 para Modularidad
 # niveles: cantidad de cortes para el método Laplaciano
 # Retorno:
-# Grafico: Subplots uno para cada valor de m. Diferenciando con colores las distintas comunidades     
+# Grafico: Subplots uno para cada valor de m. Diferenciando con colores las distintas comunidades  
+def comunidades_subplot(D, lista_m, metodo):   
 
-def comunidades_subplot(D, lista_m, metodo):
     if metodo == 0:
         nombre_metodo = "Laplaciano" 
     else:
         nombre_metodo = "Modularidad"
 
-    fig, axes = plt.subplots(1, len(lista_m), figsize=(7 * len(lista_m), 7))
+    fig, axes = plt.subplots(1, len(lista_m), figsize=(9 * len(lista_m), 9))
     if len(lista_m) == 1:
         axes = [axes]
 
@@ -384,16 +398,17 @@ def comunidades_subplot(D, lista_m, metodo):
         #construimos de matriz de adyacencia y comunidad
         A = tp1.construye_adyacencia(D, m)
         A_moño = simetriza_y_ceiling(A)
-        niveles = np.log2(len(modularidad_iterativo(A_moño))) 
+        niveles = int(np.round(np.log2(len(modularidad_iterativo(A_moño)))))
+
         if metodo == 0:
-            comunidades_detectadas = laplaciano_iterativo(A_moño, niveles)
+            comunidades_detectadas = laplaciano_iterativo(A_moño, niveles, seed=np.random.randint(0, 1000))
         else:
-            comunidades_detectadas = modularidad_iterativo(A_moño)
+            comunidades_detectadas = modularidad_iterativo(A_moño, seed=np.random.randint(0, 1000))
 
         ax = axes[i]
 
         #Dibujamos el mapa de barrios (fondo)
-        barrios_local.boundary.plot(ax=ax, color='lightgray', linewidth=0.9)
+        barrios_local.boundary.plot(ax=ax, color='dimgray', linewidth=0.9)
 
         #Creamos el grafo
         G = nx.from_numpy_array(A)
@@ -403,9 +418,9 @@ def comunidades_subplot(D, lista_m, metodo):
         colores = plt.get_cmap("tab20", len(comunidades_detectadas))
 
         #Dibujamos primero las aristas
-        nx.draw_networkx_edges(G, posiciones, ax=ax, alpha=0.3, width=0.3)
+        nx.draw_networkx_edges(G, posiciones, ax=ax, alpha=0.3, width=1)
 
-        #Dibujamos los nodos por comunidad
+        #Dibujamos los nodos por comunidad con borde negro
         for j, grupo in enumerate(comunidades_detectadas):
             nx.draw_networkx_nodes(
                 G, posiciones,
@@ -413,17 +428,24 @@ def comunidades_subplot(D, lista_m, metodo):
                 node_color=[colores(j)],
                 node_size=75,
                 ax=ax,
-                alpha=0.8
+                edgecolors='k',
+                linewidths=0.2
             )
 
         ax.set_title(f"{nombre_metodo} m={m}, comunidades detectadas: {len(comunidades_detectadas)}", fontsize=11)
 
-        #Ajustamos los límites del mapa 
-        xs, ys = zip(*posiciones.values())
-        ax.set_xlim(min(xs) - 0.01, max(xs) + 0.01)
-        ax.set_ylim(min(ys) - 0.01, max(ys) + 0.01)
+        # Usar límites del mapa de barrios para que no se corte el gráfico
+        bounds = barrios_local.total_bounds  # xmin, ymin, xmax, ymax
+        x_min, y_min, x_max, y_max = bounds
+
+        x_margin = (x_max - x_min) * 0.05
+        y_margin = (y_max - y_min) * 0.05
+
+        ax.set_xlim(x_min - x_margin, x_max + x_margin)
+        ax.set_ylim(y_min - y_margin, y_max + y_margin)
         ax.set_aspect("equal")
 
+        ax.axis('off')
     plt.suptitle(f"Comunidades detectadas con método de {nombre_metodo}", fontsize=16)
-    plt.tight_layout(rect=[0, 0, 1, 0.96])
+    plt.subplots_adjust(left=0.05, right=0.95, top=0.9, bottom=0.05, wspace=0.2)
     plt.show()
