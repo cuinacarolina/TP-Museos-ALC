@@ -312,7 +312,7 @@ def ejercicio_3_c(D, m, rango_alpha):
 def grafico_mayores_pg_variando_m(D, alpha, rango_m):    
     maximos_indices = set()
     resultados = {}
-    # Recorre los valores posibles de m, para cada uno calcula el pagerank y guarda el valor de los 3 mayores índices
+    #Recorremos los valores posibles de m, para cada uno calcula el pagerank y guarda el valor de los 3 mayores índices
     for m in rango_m:
         A = construye_adyacencia(D, m)
         p = calcula_pagerank(A, 1/5)
@@ -321,14 +321,14 @@ def grafico_mayores_pg_variando_m(D, alpha, rango_m):
         
     for idx in maximos_indices:
         resultados[idx] = []
-    # Vuelve a recorrer rango_m y guardar los pageranks de esos museos
+    #Volvemos a recorrer rango_m y guardar los pageranks de esos museos
     for m in rango_m:
         A = construye_adyacencia(D, m)
         p = calcula_pagerank(A, 1/5)
         
         for idx in maximos_indices:
             resultados[idx].append(p[idx])
-    # Grafica
+    #graficamos
     plt.figure(figsize=(12, 8))
     
     for idx, valores in resultados.items():
@@ -380,21 +380,35 @@ def pageranks_vecinos_df(D, museo_idx, rango_m, rango_alpha, museos):
 # m_fijo define cuántos vecinos se consideran en la matriz de adyacencia.
 # lista_alpha contiene los valores de alfa que se quieren visualizar en el gráfico.
 def grafico_pagerank_vecinos_por_alfa(df, museo_base, m_fijo, lista_alpha):
-    # Filtrar por m fijo y los valores de alfa deseados
-    df_filtrado = df[(df['m'] == m_fijo) & (df['alfa'].isin(lista_alpha))]
+    #Filtrar por m fijo y valores de alfa deseados
+    df_filtrado = df[(df['m'] == m_fijo) & (df['alfa'].isin(lista_alpha))].copy()
 
-    # Crear gráfico de barras
+    #Convertir alfa a string para eje categórico
+    df_filtrado['alfa_str'] = df_filtrado['alfa'].astype(str)
+
     plt.figure(figsize=(12,6))
-    sns.barplot(data=df_filtrado, x='alfa', y='pagerank_vecino', hue='museo_vecino')
+    #Barras para PageRank vecinos con eje x categórico
+    ax = sns.barplot(data=df_filtrado, x='alfa_str', y='pagerank_vecino', hue='museo_vecino',palette='viridis')
+
+    #Extraer PageRank base sin duplicados y con alfa_str
+    pr_base = df_filtrado[['alfa_str', 'pagerank_museo_base']].drop_duplicates().reset_index(drop=True)
+
+    #Obtener posiciones x de cada barra (índices de las categorías)
+    posiciones_x = np.arange(len(pr_base))
+
+    #Agregar puntos para PageRank base en la posición x correcta
+    plt.scatter(posiciones_x, pr_base['pagerank_museo_base'], color='chocolate', s=100, marker='D', label=f'PageRank {museo_base}')
+
     plt.title(f'PageRank vecinos de {museo_base} según alfa (m={m_fijo})')
-    plt.ylabel('PageRank vecino')
+    plt.ylabel('PageRank')
     plt.xlabel('Valor de alfa')
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+
+    #Ajustar ticks para que muestren los valores de alfa originales
+    plt.xticks(posiciones_x, pr_base['alfa_str'])
+
     plt.show()
 
-    # Mostrar también el PageRank base para referencia
-    pr_base = df_filtrado[['alfa','pagerank_museo_base']].drop_duplicates().set_index('alfa')
-    print(f"PageRank de {museo_base} por alfa:\n{pr_base}\n")
 
 #%% Museos con mayor pagerank variando el alpha
 # Visualiza el PageRank de los museos mas centrales para algun alpha. 
@@ -405,7 +419,7 @@ def grafico_pagerank_vecinos_por_alfa(df, museo_base, m_fijo, lista_alpha):
 def grafico_mayores_pg_variando_alpha(D, m, rango_alpha):
     A = construye_adyacencia(D, m)
     
-    # Guarda todos los vectores PageRank
+    #Guardamos todos los vectores PageRank
     pageranks = []
     museos_centrales = set()
 
@@ -413,17 +427,17 @@ def grafico_mayores_pg_variando_alpha(D, m, rango_alpha):
         p = calcula_pagerank(A, alpha)
         pageranks.append(p)
 
-        # Detecta top 3
+        #top 3
         top_3 = sorted(range(len(p)), key=lambda i: p[i], reverse=True)[:3]
         museos_centrales.update(top_3)
 
-    # Arma la trayectoria completa de cada museo central
+    #Armamos la trayectoria completa de cada museo central
     trayectoria = {idx: [] for idx in museos_centrales}
     for p in pageranks:
         for idx in museos_centrales:
             trayectoria[idx].append(p[idx])
 
-    # Grafica
+    #graficamos
     plt.figure(figsize=(12, 12))
     for idx, valores in trayectoria.items():
         nombre = museos.loc[idx, "name"]
