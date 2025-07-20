@@ -18,6 +18,7 @@ import pandas as pd # Para leer archivos
 import geopandas as gpd # Para hacer cosas geográficas
 import networkx as nx # Construcción de la red en NetworkX
 from scipy.linalg import solve_triangular
+import seaborn as sns 
 
 #%%
 carpeta = "/Users/cuina/Downloads/TPALCMuseos/"
@@ -300,9 +301,7 @@ def ejercicio_3_c(D, m, rango_alpha):
     plt.tight_layout()
     # Muestra la imagen final
     plt.show()
-    return
-rango_alpha = [ 6/7, 4/5, 2/3, 1/2, 1/3, 1/5, 1/7]
-ejercicio_3_c(D, 5, rango_alpha)   
+    return  
 
 #%% Museos con mayor pagerank variando el m 
 # Visualiza el PageRank de los museos mas centrales para algun m. 
@@ -345,23 +344,57 @@ def grafico_mayores_pg_variando_m(D, alpha, rango_m):
     return
 
 #%%
-#Esta funcion recibe un indice de museo y un rango de vecinos. Lo que hace es crear un diccionario donde la clave es el m y los valores son los pageranks de los museos vecinos al museo ingresado.
-def pageranks_vecinos(D,museo,rango_m):
-    #creo el diccionario
-    res= {}
-    for m in rango_m:
-        # Construir la matriz de adyacencia para el valor actual de m
-        A = construye_adyacencia(D, m)
-        # Calcular el PageRank para la matriz A con el factor de amortiguación alpha
-        p = calcula_pagerank(A, alpha)
-        
-        vecinos = np.where(A[museo, :] > 0)[0]
-        #la clave es el m 
-        clave = f"cant de vecinos: {m}"
-        #redondeo el pagerank y uso solo 4 decimales
-        vecinos_pg = {vec: round(float(p[vec]), 4) for vec in vecinos}
-        res[clave] = vecinos_pg
-    return res
+def pageranks_vecinos_df(D, museo_idx, rango_m, rango_alpha, museos):
+    filas = []
+
+    for alpha in rango_alpha:
+        for m in rango_m:
+            A = construye_adyacencia(D, m)
+            p = calcula_pagerank(A, alpha)
+
+            pr_base = round(float(p[museo_idx]), 4)
+            vecinos = np.where(A[museo_idx, :] > 0)[0]
+
+            for vec in vecinos:
+                nombre_vecino = museos.iloc[vec]["name"]
+                if pd.isna(nombre_vecino):
+                    nombre_vecino = f"Museo #{vec}"
+                pr_vecino = round(float(p[vec]), 4)
+
+                filas.append({
+                    "m": m,
+                    "alfa": alpha,
+                    "museo_vecino": nombre_vecino,
+                    "pagerank_vecino": pr_vecino,
+                    "pagerank_museo_base": pr_base
+                })
+
+    df = pd.DataFrame(filas)
+    return df.sort_values(by=["alfa", "m", "pagerank_vecino"], ascending=[True, True, False])
+
+#%%
+# Grafica el PageRank del museo base y sus vecinos para distintos valores de alfa.
+# El número de vecinos (m) se mantiene fijo.
+# df es un DataFrame que debe incluir columnas con PageRank, m, alfa, y nombres de museos.
+# El parámetro museo indica el nombre del museo base que se está analizando.
+# m_fijo define cuántos vecinos se consideran en la matriz de adyacencia.
+# lista_alpha contiene los valores de alfa que se quieren visualizar en el gráfico.
+def grafico_pagerank_vecinos_por_alfa(df, museo_base, m_fijo, lista_alpha):
+    # Filtrar por m fijo y los valores de alfa deseados
+    df_filtrado = df[(df['m'] == m_fijo) & (df['alfa'].isin(lista_alpha))]
+
+    # Crear gráfico de barras
+    plt.figure(figsize=(12,6))
+    sns.barplot(data=df_filtrado, x='alfa', y='pagerank_vecino', hue='museo_vecino')
+    plt.title(f'PageRank vecinos de {museo_base} según alfa (m={m_fijo})')
+    plt.ylabel('PageRank vecino')
+    plt.xlabel('Valor de alfa')
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.show()
+
+    # Mostrar también el PageRank base para referencia
+    pr_base = df_filtrado[['alfa','pagerank_museo_base']].drop_duplicates().set_index('alfa')
+    print(f"PageRank de {museo_base} por alfa:\n{pr_base}\n")
 
 #%% Museos con mayor pagerank variando el alpha
 # Visualiza el PageRank de los museos mas centrales para algun alpha. 
