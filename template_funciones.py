@@ -20,6 +20,8 @@ import networkx as nx # Construcción de la red en NetworkX
 from scipy.linalg import solve_triangular
 
 #%%
+carpeta = "/Users/cuina/Downloads/TPALCMuseos/"
+
 # Leemos el archivo, retenemos aquellos museos que están en CABA, y descartamos aquellos que no tienen latitud y longitud
 museos = gpd.read_file('https://raw.githubusercontent.com/MuseosAbiertos/Leaflet-museums-OpenStreetMap/refs/heads/principal/data/export.geojson')
 barrios = gpd.read_file('https://cdn.buenosaires.gob.ar/datosabiertos/datasets/ministerio-de-educacion/barrios/barrios.geojson')
@@ -299,7 +301,8 @@ def ejercicio_3_c(D, m, rango_alpha):
     # Muestra la imagen final
     plt.show()
     return
-    
+rango_alpha = [ 6/7, 4/5, 2/3, 1/2, 1/3, 1/5, 1/7]
+ejercicio_3_c(D, 5, rango_alpha)   
 
 #%% Museos con mayor pagerank variando el m 
 # Visualiza el PageRank de los museos mas centrales para algun m. 
@@ -340,6 +343,30 @@ def grafico_mayores_pg_variando_m(D, alpha, rango_m):
     plt.tight_layout()
     plt.show()
     return
+rango_m = [2,4,6,8,10]
+alpha = 1/5
+grafico_mayores_pg_variando_m(D, alpha, rango_m)
+#%%
+#Esta funcion recibe un indice de museo y un rango de vecinos. Lo que hace es crear un diccionario donde la clave es el m y los valores son los pageranks de los museos vecinos al museo ingresado.
+def pageranks_vecinos(D,museo,rango_m):
+    #creo el diccionario
+    res= {}
+    for m in rango_m:
+        # Construir la matriz de adyacencia para el valor actual de m
+        A = construye_adyacencia(D, m)
+        # Calcular el PageRank para la matriz A con el factor de amortiguación alpha
+        p = calcula_pagerank(A, alpha)
+        
+        vecinos = np.where(A[museo, :] > 0)[0]
+        #la clave es el m 
+        clave = f"cant de vecinos: {m}"
+        #redondeo el pagerank y uso solo 4 decimales
+        vecinos_pg = {vec: round(float(p[vec]), 4) for vec in vecinos}
+        res[clave] = vecinos_pg
+    return res
+#%%
+Casa_Rosada = pageranks_vecinos(D, 15, rango_m)
+Museo_de_la_Ciudad = pageranks_vecinos(D, 18, rango_m)
 
 #%% Museos con mayor pagerank variando el alpha
 # Visualiza el PageRank de los museos mas centrales para algun alpha. 
@@ -349,7 +376,7 @@ def grafico_mayores_pg_variando_m(D, alpha, rango_m):
 # Retorna: None. La función genera un gráfico de lineas. 
 def grafico_mayores_pg_variando_alpha(D, m, rango_alpha):
     A = construye_adyacencia(D, m)
-
+    
     # Guarda todos los vectores PageRank
     pageranks = []
     museos_centrales = set()
@@ -445,10 +472,3 @@ def condicion_1(B):
     cond = norma_B * inv_norma
     #retorna cond
     return cond
-
-
-
-
-
-
-
