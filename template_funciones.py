@@ -343,9 +343,7 @@ def grafico_mayores_pg_variando_m(D, alpha, rango_m):
     plt.tight_layout()
     plt.show()
     return
-rango_m = [2,4,6,8,10]
-alpha = 1/5
-grafico_mayores_pg_variando_m(D, alpha, rango_m)
+
 #%%
 #Esta funcion recibe un indice de museo y un rango de vecinos. Lo que hace es crear un diccionario donde la clave es el m y los valores son los pageranks de los museos vecinos al museo ingresado.
 def pageranks_vecinos(D,museo,rango_m):
@@ -364,9 +362,6 @@ def pageranks_vecinos(D,museo,rango_m):
         vecinos_pg = {vec: round(float(p[vec]), 4) for vec in vecinos}
         res[clave] = vecinos_pg
     return res
-#%%
-Casa_Rosada = pageranks_vecinos(D, 15, rango_m)
-Museo_de_la_Ciudad = pageranks_vecinos(D, 18, rango_m)
 
 #%% Museos con mayor pagerank variando el alpha
 # Visualiza el PageRank de los museos mas centrales para algun alpha. 
@@ -472,3 +467,4 @@ def condicion_1(B):
     cond = norma_B * inv_norma
     #retorna cond
     return cond
+
